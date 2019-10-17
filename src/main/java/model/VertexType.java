@@ -5,11 +5,11 @@ public enum VertexType {
 
     private final String symbol;
 
-    VertexType(String symbol){
+    VertexType(String symbol) {
         this.symbol = symbol;
     }
 
-    public String getSybmbol(){
+    public String getSymbol() {
         return symbol;
     }
 }

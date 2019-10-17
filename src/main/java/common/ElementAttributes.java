@@ -12,5 +12,6 @@ public class ElementAttributes {
 
     public static String Z = "z";
 
-    public static String EDGE_NODE_ID = "edgeNode";
+    public static String XYZ = "xyz";
+
 }

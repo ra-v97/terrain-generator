@@ -16,6 +16,7 @@ public abstract class GraphNode extends SingleNode {
 
     protected GraphNode(AbstractGraph graph, String id, String symbol, double xCoordinate, double yCoordinate, double zCoordinate) {
         super(graph, id);
+        super.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         this.symbol = symbol;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
@@ -40,16 +41,16 @@ public abstract class GraphNode extends SingleNode {
 
     public void setXCoordinate(double xCoordinate) {
         this.xCoordinate = xCoordinate;
-        this.setAttribute(ElementAttributes.X, xCoordinate);
+        graph.getNode(this.id).setAttribute(ElementAttributes.X, xCoordinate);
     }
 
     public void setYCoordinate(double yCoordinate) {
         this.yCoordinate = yCoordinate;
-        this.setAttribute(ElementAttributes.Y, yCoordinate);
+        graph.getNode(this.id).setAttribute(ElementAttributes.Y, yCoordinate);
     }
 
     public void setZCoordinate(double zCoordinate) {
         this.zCoordinate = zCoordinate;
-        this.setAttribute(ElementAttributes.Z, zCoordinate);
+        graph.getNode(this.id).setAttribute(ElementAttributes.Z, zCoordinate);
     }
 }

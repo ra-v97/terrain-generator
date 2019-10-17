@@ -1,14 +1,13 @@
 package model;
 
-import common.ElementAttributes;
 import org.graphstream.graph.implementations.AbstractGraph;
 
 public class Vertex extends GraphNode {
 
     private VertexType vertexType;
 
-    private Vertex(AbstractGraph graph, String id, String symbol, VertexType vertexType, double x, double y, double z){
-        super(graph, id, vertexType.getSybmbol(), x, y, z);
+    private Vertex(AbstractGraph graph, String id, VertexType vertexType, double x, double y, double z) {
+        super(graph, id, vertexType.getSymbol(), x, y, z);
         this.vertexType = vertexType;
     }
 
@@ -17,8 +16,6 @@ public class Vertex extends GraphNode {
         private final AbstractGraph graph;
 
         private final String id;
-
-        private String symbol;
 
         private VertexType vertexType;
 
@@ -33,12 +30,7 @@ public class Vertex extends GraphNode {
             this.id = id;
         }
 
-        public VertexBuilder setSymbol(String symbol){
-            this.symbol = symbol;
-            return this;
-        }
-
-        public VertexBuilder setVertexType(VertexType vertexType){
+        public VertexBuilder setVertexType(VertexType vertexType) {
             this.vertexType = vertexType;
             return this;
         }
@@ -59,16 +51,10 @@ public class Vertex extends GraphNode {
         }
 
         public Vertex build() {
-            if (symbol == null) {
-                symbol = id;
-            }
-            if(vertexType == null){
+            if (vertexType == null) {
                 vertexType = VertexType.SIMPLE_NODE;
             }
-            Vertex vertex = new Vertex(graph, id, symbol, vertexType, xCoordinate, yCoordinate, zCoordinate);
-            vertex.addAttribute(ElementAttributes.FROZEN_LAYOUT);
-            vertex.addAttribute("xyz", xCoordinate, yCoordinate, zCoordinate);
-            return vertex;
+            return new Vertex(graph, id, vertexType, xCoordinate, yCoordinate, zCoordinate);
         }
     }
 }
