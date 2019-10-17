@@ -107,4 +107,8 @@ public class ModelGraph extends MultiGraph {
         edges.put(graphEdge.getId(), graphEdge);
         return graphEdge;
     }
+
+    public Optional<GraphEdge> getEdgeById(String id) {
+        return Optional.ofNullable(edges.get(id));
+    }
 }

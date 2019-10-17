@@ -21,7 +21,7 @@ public class MainApp {
         graph.insertEdge("e2", v2, v3, true, 1.0);
         graph.insertEdge("e3", v3, v1, true, 1.0);
         InteriorNode in = graph.insertInterior("i1", v1, v2, v3);
-
+        in.setPartitionRequired(true);
         graph.display();
     }
 }

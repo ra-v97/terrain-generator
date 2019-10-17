@@ -11,6 +11,10 @@ public class Vertex extends GraphNode {
         this.vertexType = vertexType;
     }
 
+    public VertexType getVertexType() {
+        return vertexType;
+    }
+
     public static class VertexBuilder {
 
         private final AbstractGraph graph;
