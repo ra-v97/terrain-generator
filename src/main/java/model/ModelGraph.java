@@ -1,6 +1,7 @@
 package model;
 
 import common.ElementAttributes;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 
@@ -106,6 +107,13 @@ public class ModelGraph extends MultiGraph {
         this.addEdge(graphEdge.getId(), n1, n2);
         edges.put(graphEdge.getId(), graphEdge);
         return graphEdge;
+    }
+
+    public void deleteEdge(GraphNode n1, GraphNode n2){
+        Edge edge = n1.getEdgeBetween(n2);
+        edges.remove(edge.getId());
+        this.removeEdge(n1,n2);
+
     }
 
     public Optional<GraphEdge> getEdgeById(String id) {

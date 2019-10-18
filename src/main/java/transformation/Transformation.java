@@ -9,5 +9,5 @@ public interface Transformation {
         return false;
     }
 
-    ModelGraph transformGraph(ModelGraph graph);
+    void transformGraph(ModelGraph graph, InteriorNode interiorNode);
 }
