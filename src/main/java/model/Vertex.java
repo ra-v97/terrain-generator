@@ -6,7 +6,7 @@ public class Vertex extends GraphNode {
 
     private VertexType vertexType;
 
-    private Vertex(AbstractGraph graph, String id, VertexType vertexType, double x, double y, double z) {
+    public Vertex(AbstractGraph graph, String id, VertexType vertexType, double x, double y, double z) {
         super(graph, id, vertexType.getSymbol(), x, y, z);
         this.vertexType = vertexType;
     }

@@ -9,5 +9,11 @@ public interface Transformation {
         return false;
     }
 
-    void transformGraph(ModelGraph graph, InteriorNode interiorNode);
+    /**
+     * This operation is NOT idempotent. It only returns the {@link ModelGraph} to enable transformation chaining
+     * @param graph graph to be transformed
+     * @param interiorNode interior node of the triangle
+     * @return the same graph after transformation
+     */
+    ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode);
 }

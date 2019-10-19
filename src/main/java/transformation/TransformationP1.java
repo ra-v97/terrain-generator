@@ -50,7 +50,7 @@ public class TransformationP1 implements Transformation {
     }
 
     @Override
-    public void transformGraph(ModelGraph graph, InteriorNode interiorNode) {
+    public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
         Vertex hangingVertex = null;
         Vertex simpleVertex1 = null;
@@ -85,24 +85,18 @@ public class TransformationP1 implements Transformation {
 
         GraphEdge insertedEdge1 = graph.insertEdge(newEdge1Id, simpleVertex1, insertedVertex);
         insertedEdge1.setB(oppositeToHangingNodeEdge.isB());
-        insertedEdge1.setL(oppositeToHangingNodeEdge.getL() / 2.0);
 
         GraphEdge insertedEdge2 = graph.insertEdge(newEdge2Id, simpleVertex2, insertedVertex);
         insertedEdge2.setB(oppositeToHangingNodeEdge.isB());
-        insertedEdge2.setL(oppositeToHangingNodeEdge.getL() / 2.0);
 
         GraphEdge insertedEdge3 = graph.insertEdge(newEdge3Id, hangingVertex, insertedVertex);
         insertedEdge3.setB(false);
-        double insertedEdge3Length = Math.sqrt(
-                (hangingVertex.getXCoordinate()-insertedVertex.getXCoordinate())*(hangingVertex.getXCoordinate()-insertedVertex.getXCoordinate())
-                +(hangingVertex.getYCoordinate()-insertedVertex.getYCoordinate())*(hangingVertex.getYCoordinate()-insertedVertex.getYCoordinate())
-                +(hangingVertex.getZCoordinate()-insertedVertex.getZCoordinate())*(hangingVertex.getZCoordinate()-insertedVertex.getZCoordinate()));
-        insertedEdge3.setL(insertedEdge3Length);
 
         String insertedInterior1Id = hangingVertex.getId().concat(simpleVertex1.getId()).concat(insertedVertex.getId());
         String insertedInterior2Id = hangingVertex.getId().concat(simpleVertex2.getId()).concat(insertedVertex.getId());
         graph.insertInterior(insertedInterior1Id, hangingVertex, simpleVertex1,  insertedVertex);
         graph.insertInterior(insertedInterior2Id, hangingVertex, simpleVertex2,  insertedVertex);
+        return graph;
     }
 
     private static int getSimpleVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {

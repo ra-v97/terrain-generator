@@ -5,6 +5,7 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,11 +30,12 @@ public class ModelGraph extends MultiGraph {
         super(id);
     }
 
-    public void insertVertex(Vertex vertex) {
+    public Vertex insertVertex(Vertex vertex) {
         Node node = this.addNode(vertex.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, vertex.getXCoordinate(), vertex.getYCoordinate(), vertex.getZCoordinate());
         vertexes.put(vertex.getId(), vertex);
+        return vertex;
     }
 
     public Vertex insertVertex(String id, VertexType vertexType, double x, double y, double z) {
@@ -49,6 +51,10 @@ public class ModelGraph extends MultiGraph {
 
     public Optional<Vertex> getVertex(String id) {
         return Optional.ofNullable(vertexes.get(id));
+    }
+
+    public Collection<Vertex> getVertices() {
+        return vertexes.values();
     }
 
     public Optional<Vertex> removeVertex(String id) {
@@ -83,6 +89,10 @@ public class ModelGraph extends MultiGraph {
         return Optional.ofNullable(interiors.get(id));
     }
 
+    public Collection<InteriorNode> getInteriors() {
+        return interiors.values();
+    }
+
     public void removeInterior(String id) {
         edges.values().stream()
                 .filter(graphEdge -> graphEdge.getEdgeNodes().contains(interiors.get(id)))
@@ -99,10 +109,9 @@ public class ModelGraph extends MultiGraph {
         return graphEdge;
     }
 
-    public GraphEdge insertEdge(String id, GraphNode n1, GraphNode n2, boolean B, double L) {
+    public GraphEdge insertEdge(String id, GraphNode n1, GraphNode n2, boolean B) {
         GraphEdge graphEdge = new GraphEdge.GraphEdgeBuilder(id, n1, n2)
                 .setB(B)
-                .setL(L)
                 .build();
         this.addEdge(graphEdge.getId(), n1, n2);
         edges.put(graphEdge.getId(), graphEdge);
@@ -118,5 +127,17 @@ public class ModelGraph extends MultiGraph {
 
     public Optional<GraphEdge> getEdgeById(String id) {
         return Optional.ofNullable(edges.get(id));
+    }
+
+    public Optional<GraphEdge> getEdge(Vertex v1, Vertex v2) {
+        return Optional.ofNullable(edges.get(v1.getEdgeBetween(v2).getId()));
+    }
+
+    public Collection<GraphEdge> getEdges() {
+        return edges.values();
+    }
+
+    public GraphEdge insertEdge(GraphEdge ge) {
+        return insertEdge(ge.getId(), ge.getNode0(), ge.getNode1(), ge.isB());
     }
 }

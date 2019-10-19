@@ -1,5 +1,6 @@
 package model;
 
+import common.Utils;
 import org.graphstream.graph.implementations.AbstractEdge;
 import org.javatuples.Pair;
 
@@ -13,13 +14,10 @@ public class GraphEdge extends AbstractEdge {
 
     private boolean B;
 
-    private double L;
-
-    private GraphEdge(String id, String symbol, Pair<GraphNode, GraphNode> edgeNodes, boolean B, double L) {
+    public GraphEdge(String id, String symbol, Pair<GraphNode, GraphNode> edgeNodes, boolean B) {
         super(id, edgeNodes.getValue0(), edgeNodes.getValue1(), false);
         this.edgeNodes = edgeNodes;
         this.symbol = symbol;
-        this.L = L;
         this.B = B;
     }
 
@@ -36,15 +34,11 @@ public class GraphEdge extends AbstractEdge {
     }
 
     public double getL() {
-        return L;
+        return Utils.distance(edgeNodes.getValue0(), edgeNodes.getValue1());
     }
 
     public void setB(boolean b) {
         B = b;
-    }
-
-    public void setL(double l) {
-        L = l;
     }
 
     public static class GraphEdgeBuilder {
@@ -57,7 +51,6 @@ public class GraphEdge extends AbstractEdge {
 
         private boolean B;
 
-        private double L;
 
         public GraphEdgeBuilder(String id, GraphNode source, GraphNode target) {
             this.symbol = EDGE_SYMBOL;
@@ -70,13 +63,8 @@ public class GraphEdge extends AbstractEdge {
             return this;
         }
 
-        public GraphEdgeBuilder setL(double l) {
-            L = l;
-            return this;
-        }
-
         public GraphEdge build() {
-            return new GraphEdge(id, symbol, edgeNodes, B, L);
+            return new GraphEdge(id, symbol, edgeNodes, B);
         }
     }
 }
