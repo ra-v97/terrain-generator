@@ -6,8 +6,8 @@ public class Vertex extends GraphNode {
 
     private VertexType vertexType;
 
-    public Vertex(AbstractGraph graph, String id, VertexType vertexType, double x, double y, double z) {
-        super(graph, id, vertexType.getSymbol(), x, y, z);
+    public Vertex(AbstractGraph graph, String id, VertexType vertexType, Point3d coordinates) {
+        super(graph, id, vertexType.getSymbol(), coordinates);
         this.vertexType = vertexType;
     }
 
@@ -39,6 +39,13 @@ public class Vertex extends GraphNode {
             return this;
         }
 
+        public VertexBuilder setCoordinates(Point3d coordinates){
+            this.xCoordinate = coordinates.getX();
+            this.yCoordinate = coordinates.getY();
+            this.zCoordinate = coordinates.getZ();
+            return this;
+        }
+
         public VertexBuilder setXCoordinate(double xCoordinate) {
             this.xCoordinate = xCoordinate;
             return this;
@@ -58,7 +65,7 @@ public class Vertex extends GraphNode {
             if (vertexType == null) {
                 vertexType = VertexType.SIMPLE_NODE;
             }
-            return new Vertex(graph, id, vertexType, xCoordinate, yCoordinate, zCoordinate);
+            return new Vertex(graph, id, vertexType, new Point3d(xCoordinate, yCoordinate, zCoordinate));
         }
     }
 }

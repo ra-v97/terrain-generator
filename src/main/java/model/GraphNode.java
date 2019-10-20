@@ -8,19 +8,17 @@ public abstract class GraphNode extends SingleNode {
 
     private final String symbol;
 
-    private double xCoordinate;
-
-    private double yCoordinate;
-
-    private double zCoordinate;
+    private final Point3d coordinates;
 
     protected GraphNode(AbstractGraph graph, String id, String symbol, double xCoordinate, double yCoordinate, double zCoordinate) {
+        this(graph, id, symbol, new Point3d(xCoordinate, yCoordinate, zCoordinate));
+    }
+
+    protected GraphNode(AbstractGraph graph, String id, String symbol, Point3d coordinates) {
         super(graph, id);
         super.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         this.symbol = symbol;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        this.zCoordinate = zCoordinate;
+        this.coordinates = coordinates;
     }
 
     public String getSymbol() {
@@ -28,29 +26,18 @@ public abstract class GraphNode extends SingleNode {
     }
 
     public double getXCoordinate() {
-        return xCoordinate;
+        return coordinates.getX();
     }
 
     public double getYCoordinate() {
-        return yCoordinate;
+        return coordinates.getY();
     }
 
     public double getZCoordinate() {
-        return zCoordinate;
+        return coordinates.getZ();
     }
 
-    public void setXCoordinate(double xCoordinate) {
-        this.xCoordinate = xCoordinate;
-        graph.getNode(this.id).setAttribute(ElementAttributes.X, xCoordinate);
-    }
-
-    public void setYCoordinate(double yCoordinate) {
-        this.yCoordinate = yCoordinate;
-        graph.getNode(this.id).setAttribute(ElementAttributes.Y, yCoordinate);
-    }
-
-    public void setZCoordinate(double zCoordinate) {
-        this.zCoordinate = zCoordinate;
-        graph.getNode(this.id).setAttribute(ElementAttributes.Z, zCoordinate);
+    public Point3d getCoordinates(){
+        return  coordinates;
     }
 }

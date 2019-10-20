@@ -18,16 +18,13 @@ public class ModelGraph extends MultiGraph {
 
     private Map<String, GraphEdge> edges = new HashMap<>();
 
-    public ModelGraph(String id, boolean strictChecking, boolean autoCreate, int initialNodeCapacity, int initialEdgeCapacity) {
-        super(id, strictChecking, autoCreate, initialNodeCapacity, initialEdgeCapacity);
-    }
-
-    public ModelGraph(String id, boolean strictChecking, boolean autoCreate) {
-        super(id, strictChecking, autoCreate);
-    }
-
     public ModelGraph(String id) {
         super(id);
+    }
+
+    public GraphEdge getEdgeBetweenNodes(Vertex v1, Vertex v2){
+        return getEdgeById(v1.getEdgeBetween(v2).getId())
+                .orElseThrow(()->new RuntimeException("Unknown edge id"));
     }
 
     public Vertex insertVertex(Vertex vertex) {
@@ -38,12 +35,10 @@ public class ModelGraph extends MultiGraph {
         return vertex;
     }
 
-    public Vertex insertVertex(String id, VertexType vertexType, double x, double y, double z) {
+    public Vertex insertVertex(String id, VertexType vertexType, Point3d coordinates) {
         Vertex vertex = new Vertex.VertexBuilder(this, id)
                 .setVertexType(vertexType)
-                .setXCoordinate(x)
-                .setYCoordinate(y)
-                .setZCoordinate(z)
+                .setCoordinates(coordinates)
                 .build();
         insertVertex(vertex);
         return vertex;
@@ -138,6 +133,6 @@ public class ModelGraph extends MultiGraph {
     }
 
     public GraphEdge insertEdge(GraphEdge ge) {
-        return insertEdge(ge.getId(), ge.getNode0(), ge.getNode1(), ge.isB());
+        return insertEdge(ge.getId(), ge.getNode0(), ge.getNode1(), ge.getB());
     }
 }

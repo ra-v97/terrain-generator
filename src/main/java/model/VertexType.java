@@ -1,6 +1,7 @@
 package model;
 
 public enum VertexType {
+
     HANGING_NODE("H"), SIMPLE_NODE("V");
 
     private final String symbol;

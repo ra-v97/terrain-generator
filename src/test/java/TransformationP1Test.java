@@ -1,4 +1,3 @@
-import common.Utils;
 import model.*;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -78,7 +77,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
         Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
         Vertex v2 = graph.getVertex("v2").orElseThrow(AssertionError::new);
-        assertEquals(Utils.middlePoint(v1, v2), new Triplet<>(newVertex.getXCoordinate(), newVertex.getYCoordinate(), newVertex.getZCoordinate()));
+        assertEquals(Point3d.middlePoint(v1.getCoordinates(), v2.getCoordinates()), newVertex.getCoordinates());
     }
 
     @Test
@@ -115,7 +114,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         GraphEdge opposite1 = graph.getEdge(v1, newVertex).orElseThrow(AssertionError::new);
         GraphEdge opposite2 = graph.getEdge(newVertex, v2).orElseThrow(AssertionError::new);
 
-        assertTrue(opposite1.isB() == opposite2.isB() == oldOpposite.isB());
+        assertTrue(opposite1.getB() == opposite2.getB() == oldOpposite.getB());
     }
 
     @Test
@@ -143,7 +142,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         Vertex h = graph.getVertex("v3").orElseThrow(AssertionError::new);
         GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
 
-        assertFalse(internalEdge.isB());
+        assertFalse(internalEdge.getB());
     }
 
     @Test
@@ -155,15 +154,15 @@ public class TransformationP1Test extends AbstractTransformationTest {
         Vertex h = graph.getVertex("v3").orElseThrow(AssertionError::new);
         GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
 
-        assertEquals(Utils.distance(newVertex, h), internalEdge.getL());
+        assertEquals(Point3d.distance(newVertex.getCoordinates(), h.getCoordinates()), internalEdge.getL());
     }
 
 
     private ModelGraph createAcuteTriangleGraph(boolean needsPartitioning) {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.HANGING_NODE, 0.0, 0.0, -42.0);
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, 0.0, 10.0, -42.0);
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, 6.0, 6.0, -42.0);
+        Vertex v1 = new Vertex(graph, "v1", VertexType.HANGING_NODE, new Point3d(0.0, 0.0, -42.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, -42.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(6.0, 6.0, -42.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
@@ -173,9 +172,9 @@ public class TransformationP1Test extends AbstractTransformationTest {
 
     private ModelGraph createObtuseTriangleGraph(boolean needsPartitioning) {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, 0.2, 0.0, -6.0);
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, 0.0, 10.0, 2.0);
-        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, 1.0, 6.0, -8.0);
+        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.2, 0.0, -6.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 2.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, new Point3d(1.0, 6.0, -8.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
@@ -185,9 +184,9 @@ public class TransformationP1Test extends AbstractTransformationTest {
 
     private ModelGraph createInternalObtuseTriangleGraph(boolean needsPartitioning) {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, 0.0, 0.0, 12.0);
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, 0.0, 10.0, -50.0);
-        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, 1.0, 6.0, 0.0);
+        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 12.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, -50.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, new Point3d(1.0, 6.0, 0.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), false);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), false);
@@ -197,9 +196,9 @@ public class TransformationP1Test extends AbstractTransformationTest {
 
     private ModelGraph createSemiInternalObtuseTriangleGraph(boolean needsPartitioning) {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, 0.0, 0.0, -1.0);
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, 0.0, 10.0, 0.0);
-        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, 1.0, 6.0, 1.0);
+        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, -1.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, new Point3d(1.0, 6.0, 1.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
@@ -209,9 +208,9 @@ public class TransformationP1Test extends AbstractTransformationTest {
 
     private ModelGraph createRightTriangleGraph(boolean needsPartitioning) {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.HANGING_NODE, 0.0, 0.0, 0.0);
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, 0.0, 10.0, 0.0);
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, 8.0, 10.0, 0.0);
+        Vertex v1 = new Vertex(graph, "v1", VertexType.HANGING_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(8.0, 10.0, 0.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
