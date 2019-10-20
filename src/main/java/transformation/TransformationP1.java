@@ -38,9 +38,12 @@ public class TransformationP1 implements Transformation {
             throw new RuntimeException("Transformation error");
         }
 
-        GraphEdge oppositeToHangingNodeEdge = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex2);
-        GraphEdge hangingNodeAdjacentEdge1 = graph.getEdgeBetweenNodes(hangingVertex, simpleVertex1);
-        GraphEdge hangingNodeAdjacentEdge2 = graph.getEdgeBetweenNodes(hangingVertex, simpleVertex2);
+        GraphEdge oppositeToHangingNodeEdge = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex2)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge hangingNodeAdjacentEdge1 = graph.getEdgeBetweenNodes(hangingVertex, simpleVertex1)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge hangingNodeAdjacentEdge2 = graph.getEdgeBetweenNodes(hangingVertex, simpleVertex2)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
         if(!oppositeToHangingNodeEdge.getB()){
             return false;
@@ -63,7 +66,8 @@ public class TransformationP1 implements Transformation {
             throw new RuntimeException("Transformation error");
         }
 
-        GraphEdge oppositeToHangingNodeEdge = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex2);
+        GraphEdge oppositeToHangingNodeEdge = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex2)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
         //transformation process
         graph.removeInterior(interiorNode.getId());
