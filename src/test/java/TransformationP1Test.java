@@ -1,6 +1,5 @@
 import model.*;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP1;

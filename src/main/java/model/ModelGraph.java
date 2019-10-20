@@ -3,7 +3,6 @@ package model;
 import common.ElementAttributes;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.AbstractEdge;
 import org.graphstream.graph.implementations.MultiGraph;
 
 import java.util.Collection;
@@ -23,9 +22,8 @@ public class ModelGraph extends MultiGraph {
         super(id);
     }
 
-    public GraphEdge getEdgeBetweenNodes(Vertex v1, Vertex v2){
-        return getEdgeById(v1.getEdgeBetween(v2).getId())
-                .orElseThrow(()->new RuntimeException("Unknown edge id"));
+    public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
+        return getEdgeById(v1.getEdgeBetween(v2).getId());
     }
 
     public Vertex insertVertex(Vertex vertex) {
@@ -69,8 +67,8 @@ public class ModelGraph extends MultiGraph {
         return Optional.empty();
     }
 
-    public InteriorNode insertInterior(String id, Vertex v1, Vertex v2, Vertex v3) {
-        InteriorNode interiorNode = new InteriorNode(this, id, v1, v2, v3);
+    public InteriorNode insertInterior(String id, Vertex v1, Vertex v2, Vertex v3, Vertex... associatedNodes) {
+        InteriorNode interiorNode = new InteriorNode(this, id, v1, v2, v3, associatedNodes);
         Node node = this.addNode(interiorNode.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, interiorNode.getXCoordinate(), interiorNode.getYCoordinate(), interiorNode.getZCoordinate());
@@ -114,18 +112,17 @@ public class ModelGraph extends MultiGraph {
         return graphEdge;
     }
 
-    public void deleteEdge(GraphNode n1, GraphNode n2){
+    public void deleteEdge(GraphNode n1, GraphNode n2) {
         Edge edge = n1.getEdgeBetween(n2);
         edges.remove(edge.getId());
-        this.removeEdge(n1,n2);
-
+        this.removeEdge(n1, n2);
     }
 
     public Optional<GraphEdge> getEdgeById(String id) {
         return Optional.ofNullable(edges.get(id));
     }
 
-    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end){
+    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
         return this.vertexes
                 .values()
                 .stream()
@@ -133,7 +130,7 @@ public class ModelGraph extends MultiGraph {
                 .findFirst();
     }
 
-    private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end){
+    private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end) {
         return beginning.getEdgeBetween(v.getId()) != null && v.getEdgeBetween(end.getId()) != null;
     }
 
