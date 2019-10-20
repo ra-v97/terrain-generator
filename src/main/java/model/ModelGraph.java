@@ -3,6 +3,7 @@ package model;
 import common.ElementAttributes;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.AbstractEdge;
 import org.graphstream.graph.implementations.MultiGraph;
 
 import java.util.Collection;
@@ -122,6 +123,18 @@ public class ModelGraph extends MultiGraph {
 
     public Optional<GraphEdge> getEdgeById(String id) {
         return Optional.ofNullable(edges.get(id));
+    }
+
+    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end){
+        return this.vertexes
+                .values()
+                .stream()
+                .filter(v -> isVertexBetween(v, beginning, end))
+                .findFirst();
+    }
+
+    private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end){
+        return beginning.getEdgeBetween(v.getId()) != null && v.getEdgeBetween(end.getId()) != null;
     }
 
     public Optional<GraphEdge> getEdge(Vertex v1, Vertex v2) {
