@@ -24,9 +24,8 @@ public class ModelGraph extends MultiGraph {
         super(id);
     }
 
-    public GraphEdge getEdgeBetweenNodes(Vertex v1, Vertex v2){
-        return getEdgeById(v1.getEdgeBetween(v2).getId())
-                .orElseThrow(()->new RuntimeException("Unknown edge id"));
+    public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
+        return getEdgeById(v1.getEdgeBetween(v2).getId());
     }
 
     public Vertex insertVertex(Vertex vertex) {
@@ -70,8 +69,8 @@ public class ModelGraph extends MultiGraph {
         return Optional.empty();
     }
 
-    public InteriorNode insertInterior(String id, Vertex v1, Vertex v2, Vertex v3) {
-        InteriorNode interiorNode = new InteriorNode(this, id, v1, v2, v3);
+    public InteriorNode insertInterior(String id, Vertex v1, Vertex v2, Vertex v3, Vertex... associatedNodes) {
+        InteriorNode interiorNode = new InteriorNode(this, id, v1, v2, v3, associatedNodes);
         Node node = this.addNode(interiorNode.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, interiorNode.getXCoordinate(), interiorNode.getYCoordinate(), interiorNode.getZCoordinate());
@@ -117,7 +116,7 @@ public class ModelGraph extends MultiGraph {
         return graphEdge;
     }
 
-    public void deleteEdge(GraphNode n1, GraphNode n2){
+    public void deleteEdge(GraphNode n1, GraphNode n2) {
         Edge edge = n1.getEdgeBetween(n2);
         deleteEdge(edge.getId());
     }
@@ -129,6 +128,18 @@ public class ModelGraph extends MultiGraph {
 
     public Optional<GraphEdge> getEdgeById(String id) {
         return Optional.ofNullable(edges.get(id));
+    }
+
+    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+        return this.vertexes
+                .values()
+                .stream()
+                .filter(v -> isVertexBetween(v, beginning, end))
+                .findFirst();
+    }
+
+    private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end) {
+        return beginning.getEdgeBetween(v.getId()) != null && v.getEdgeBetween(end.getId()) != null;
     }
 
     public Optional<GraphEdge> getEdge(Vertex v1, Vertex v2) {

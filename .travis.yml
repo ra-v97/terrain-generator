@@ -1,0 +1,12 @@
+language: java
+install: true
+
+jdk:
+  - openjdk8
+
+jobs:
+  include:
+    - stage: build
+      script: gradle build
+    - stage: test
+      script: gradle test

@@ -1,6 +1,14 @@
 package model;
 
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AbstractGraph;
+import org.graphstream.graph.implementations.AbstractNode;
+import org.javatuples.Pair;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Vertex extends GraphNode {
 
@@ -13,6 +21,11 @@ public class Vertex extends GraphNode {
 
     public VertexType getVertexType() {
         return vertexType;
+    }
+
+    public Vertex setVertexType(VertexType type){
+        this.vertexType = type;
+        return this;
     }
 
     public static class VertexBuilder {
@@ -67,5 +80,21 @@ public class Vertex extends GraphNode {
             }
             return new Vertex(graph, id, vertexType, new Point3d(xCoordinate, yCoordinate, zCoordinate));
         }
+    }
+
+    /*
+    I am kind of sorry for this but THE MIGHTY api that library exposes
+    doesn't allow to override a default java hashcode method used to identify
+    objects in neighborMap. So firstly we need to find and retrieve object
+    with given properties and then run this function again with 'correct' reference.
+     */
+    @Override
+    public <T extends Edge> T getEdgeBetween(Node node) {
+        for(AbstractNode e : this.neighborMap.keySet()){
+            if(Objects.equals(e.getId(), node.getId())){
+                return super.getEdgeBetween(e);
+            }
+        }
+        return null;
     }
 }
