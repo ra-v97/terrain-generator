@@ -45,6 +45,21 @@ public class TransformationP3Test extends AbstractTransformationTest {
         assertEquals(VertexType.SIMPLE_NODE, graph.getValue2().getVertexType());
     }
 
+    @Test
+    public void hasNoHangingNode() {
+        // Arrange
+        Triplet<ModelGraph, InteriorNode, Vertex> graph = createGraph();
+        assertEquals(1, graph.getValue0().getInteriors().size());
+
+        // Act
+        ModelGraph result = transformation.transformGraph(graph.getValue0(), graph.getValue1());
+
+        // Assert
+        assertEquals(0, result.getVertices().stream()
+                .filter(e -> e.getVertexType().equals(VertexType.HANGING_NODE))
+                .count());
+    }
+
     private Triplet<ModelGraph, InteriorNode, Vertex> createGraph() {
         ModelGraph graph = createEmptyGraph();
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
