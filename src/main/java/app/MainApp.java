@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.javatuples.Pair;
 import transformation.Transformation;
 import transformation.TransformationP1;
-import transformation.TransformationP3;
 
 public class MainApp {
 
