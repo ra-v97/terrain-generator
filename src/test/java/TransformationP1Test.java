@@ -98,7 +98,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         ModelGraph transformed = transformation.transformGraph(graph, interior);
-        assertEquals(14, transformed.getEdges().size()); // TODO: Should we remove the old interior node and edges when transforming the graph??
+        assertEquals(11, transformed.getEdges().size()); // TODO: Should we remove the old interior node and edges when transforming the graph??
     }
 
     @Test

@@ -27,7 +27,6 @@ public class MainApp {
         in1.setPartitionRequired(true);
         Transformation t1 = new TransformationP1();
         log.info(String.format("Condition state for transformation P1: %b", t1.isConditionCompleted(graph, in1)));
-
         graph.display();
 
         try {
