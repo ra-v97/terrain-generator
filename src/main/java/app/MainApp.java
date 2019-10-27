@@ -55,7 +55,7 @@ public class MainApp {
         GraphEdge h3_v5 = graph.insertEdge("e4", h4, v5, true);
         GraphEdge v1_h5 = graph.insertEdge("e5", v1, v5, true);
 
-        InteriorNode in1 = graph.insertInterior("i1", v1, v3, v5);
+        InteriorNode in1 = graph.insertInterior("i1", v1, v3, v5, h2, h4);
         return new Pair<>(graph, in1);
     }
 
