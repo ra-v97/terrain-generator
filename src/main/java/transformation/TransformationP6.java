@@ -2,6 +2,7 @@ package transformation;
 
 import model.*;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class TransformationP6 implements Transformation {
     private Map<String, Vertex> mapVerticesToModel(ModelGraph graph){
         Map<String, Vertex> verticesMap = new HashMap<>();
         Collection<GraphEdge> edges = graph.getEdges();
+        GraphEdge wholeEdge = null;
 
         for(GraphEdge edge: edges){
             Pair<GraphNode, GraphNode> edgeNodes = edge.getEdgeNodes();
@@ -34,12 +36,16 @@ public class TransformationP6 implements Transformation {
                 if(node0.getVertexType() == VertexType.SIMPLE_NODE && node1.getVertexType() == VertexType.SIMPLE_NODE){
                     verticesMap.put(SIMPLE_VERTEX_1, node0);
                     verticesMap.put(SIMPLE_VERTEX_5, node1);
+                    wholeEdge = edge;
                 }
             }
 
         }
 
         for(GraphEdge edge: edges){
+            if(edge.equals(wholeEdge)){
+                continue;
+            }
             Pair<GraphNode, GraphNode> edgeNodes = edge.getEdgeNodes();
             GraphNode graphNode0 = edgeNodes.getValue0();
             GraphNode graphNode1 = edgeNodes.getValue1();
@@ -58,9 +64,9 @@ public class TransformationP6 implements Transformation {
 
         for(GraphNode node: graph.getVertices()){
             if(node != verticesMap.get(SIMPLE_VERTEX_1) &&
-                node != verticesMap.get(SIMPLE_VERTEX_5) &&
-                node != verticesMap.get(HANGING_NODE_2) &&
-                node != verticesMap.get(HANGING_NODE_4)) verticesMap.put(SIMPLE_VERTEX_3, (Vertex) node);
+                    node != verticesMap.get(SIMPLE_VERTEX_5) &&
+                    node != verticesMap.get(HANGING_NODE_2) &&
+                    node != verticesMap.get(HANGING_NODE_4)) verticesMap.put(SIMPLE_VERTEX_3, (Vertex) node);
         }
 
         return verticesMap;
@@ -69,6 +75,18 @@ public class TransformationP6 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode){
         Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph);
+
+        if(verticesMap.size() != 5){
+            System.out.println(verticesMap.size());
+            return false;
+        }
+
+        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        int hanging_nodes = interiorNode.getAssociatedNodes().size();
+
+        if (getSimpleVertexCount(triangle) != 3 || hanging_nodes != 2) {
+            return false;
+        }
 
         GraphEdge e1 = graph.getEdgeBetweenNodes(verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(HANGING_NODE_2))
                 .orElseThrow(() -> new IllegalStateException("Unknown vertices"));
@@ -85,16 +103,17 @@ public class TransformationP6 implements Transformation {
         GraphEdge e5 = graph.getEdgeBetweenNodes(verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_5))
                 .orElseThrow(() -> new IllegalStateException("Unknown vertices"));
 
-        return !((e1.getL() + e2.getL() >= (e3.getL() + e4.getL())) && (e1.getL() + e2.getL() >= e5.getL()));
+        return (e1.getL() + e2.getL() >= (e3.getL() + e4.getL())) && (e1.getL() + e2.getL() >= e5.getL());
     }
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
 
-        graph.removeInterior(interiorNode.getId());
         Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph);
 
-        if(!this.isConditionCompleted(graph, interiorNode)){
+        if(this.isConditionCompleted(graph, interiorNode)){
+
+            graph.removeInterior(interiorNode.getId());
 
             //change type of node 2
             Vertex node2 = verticesMap.get(HANGING_NODE_2);
@@ -111,10 +130,21 @@ public class TransformationP6 implements Transformation {
             InteriorNode leftInteriorNode = graph.insertInterior(leftInteriorId, verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_5));
             leftInteriorNode.setPartitionRequired(false);
 
-            InteriorNode rightInteriorNode = graph.insertInterior(rightInteriorId, verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5));
+            InteriorNode rightInteriorNode = graph.insertInterior(rightInteriorId, verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5), verticesMap.get(HANGING_NODE_4));
             rightInteriorNode.setPartitionRequired(false);
         }
 
         return graph;
+    }
+
+    private static int getSimpleVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
+        int count = 0;
+        for (Object o : triangle) {
+            Vertex v = (Vertex) o;
+            if (v.getVertexType() == VertexType.SIMPLE_NODE) {
+                count++;
+            }
+        }
+        return count;
     }
 }
