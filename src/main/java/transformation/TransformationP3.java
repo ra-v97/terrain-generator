@@ -3,12 +3,13 @@ package transformation;
 import model.*;
 import org.javatuples.Triplet;
 
+import java.util.List;
 import java.util.Optional;
 
 public class TransformationP3 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriage(interiorNode.getTriangleVertexes(), graph);
 
         return areAllVertexType(triangle) &&
                 isTransformationConditionFulfilled(graph, triangle);
@@ -59,13 +60,9 @@ public class TransformationP3 implements Transformation {
     }
 
     private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph){
-        Optional<Vertex> between = graph.getVertexBetween(v1, v2);
-        
-        if(between.isPresent() && between.get().getVertexType() == VertexType.HANGING_NODE){
-            return between;
-        }
+        List<Vertex> between = graph.getVertexBetween(v1, v2);
 
-        return Optional.empty();
+        return between.stream().filter(e -> e.getVertexType() == VertexType.HANGING_NODE).findAny();
     }
 
     private Vertex getHangingVertexBetween(Vertex v1, Vertex v2, ModelGraph graph){

@@ -27,7 +27,7 @@ public class AbstractTransformationTest {
         return graph;
     }
 
-    public ModelGraph createEmptyGraph() {
+    public static ModelGraph createEmptyGraph() {
         return new ModelGraph("testGraph");
     }
 }

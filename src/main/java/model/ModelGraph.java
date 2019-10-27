@@ -5,10 +5,8 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ModelGraph extends MultiGraph {
 
@@ -122,12 +120,12 @@ public class ModelGraph extends MultiGraph {
         return Optional.ofNullable(edges.get(id));
     }
 
-    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+    public List<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
         return this.vertexes
                 .values()
                 .stream()
                 .filter(v -> isVertexBetween(v, beginning, end))
-                .findFirst();
+                .collect(Collectors.toList());
     }
 
     private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end) {
