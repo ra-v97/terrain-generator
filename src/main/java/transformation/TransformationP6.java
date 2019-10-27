@@ -130,7 +130,7 @@ public class TransformationP6 implements Transformation {
             InteriorNode leftInteriorNode = graph.insertInterior(leftInteriorId, verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_5));
             leftInteriorNode.setPartitionRequired(false);
 
-            InteriorNode rightInteriorNode = graph.insertInterior(rightInteriorId, verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5));
+            InteriorNode rightInteriorNode = graph.insertInterior(rightInteriorId, verticesMap.get(SIMPLE_VERTEX_2), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5), verticesMap.get(HANGING_NODE_4));
             rightInteriorNode.setPartitionRequired(false);
         }
 

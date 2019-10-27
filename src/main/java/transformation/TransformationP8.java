@@ -134,16 +134,22 @@ public class TransformationP8 implements Transformation{
 
 			verticesMap.put(HANGING_NODE_6, node6);
 
-			graph.insertEdge("e6", verticesMap.get(HANGING_NODE_6), verticesMap.get(SIMPLE_VERTEX_3), false);
+			// remove old edge
+			graph.deleteEdge(verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_5));
 
-			//insert new interiors
+			// add new edges
+			graph.insertEdge("e6", verticesMap.get(HANGING_NODE_6), verticesMap.get(SIMPLE_VERTEX_5), false);
+			graph.insertEdge("e7", verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(HANGING_NODE_6), false);
+			graph.insertEdge("e8", verticesMap.get(HANGING_NODE_6), verticesMap.get(SIMPLE_VERTEX_3), false);
+
+			// insert new interiors
 			String interior2Id = verticesMap.get(SIMPLE_VERTEX_1).getId() + verticesMap.get(SIMPLE_VERTEX_3).getId() + verticesMap.get(HANGING_NODE_6).getId();
 			String interior3Id = verticesMap.get(SIMPLE_VERTEX_3).getId() + verticesMap.get(SIMPLE_VERTEX_5).getId() + verticesMap.get(HANGING_NODE_6).getId();
 
-			InteriorNode interior2Node = graph.insertInterior(interior2Id, verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(HANGING_NODE_6));
+			InteriorNode interior2Node = graph.insertInterior(interior2Id, verticesMap.get(SIMPLE_VERTEX_1), verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(HANGING_NODE_6), verticesMap.get(HANGING_NODE_2));
 			interior2Node.setPartitionRequired(false);
 
-			InteriorNode interior3Node = graph.insertInterior(interior3Id, verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5), verticesMap.get(HANGING_NODE_6));
+			InteriorNode interior3Node = graph.insertInterior(interior3Id, verticesMap.get(SIMPLE_VERTEX_3), verticesMap.get(SIMPLE_VERTEX_5), verticesMap.get(HANGING_NODE_6), verticesMap.get(HANGING_NODE_4));
 			interior3Node.setPartitionRequired(false);
 
 		}
