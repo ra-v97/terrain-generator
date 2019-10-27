@@ -109,6 +109,8 @@ public class TransformationP9 implements Transformation {
 
             Vertex node2 = vertexMap.get(HANGING_NODE_2);
             node2.setVertexType(VertexType.SIMPLE_NODE);
+            vertexMap.remove(HANGING_NODE_2);
+            vertexMap.put(SIMPLE_NODE_2, node2);
 
             graph.insertEdge("e7", vertexMap.get(SIMPLE_NODE_2), vertexMap.get(SIMPLE_NODE_5), false);
 
