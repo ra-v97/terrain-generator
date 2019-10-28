@@ -1,6 +1,5 @@
 package transformation;
 
-import common.Iterables;
 import model.*;
 
 import java.util.List;
@@ -50,17 +49,16 @@ public class TransformationP7 implements Transformation {
             return Optional.empty();
         }
 
-        // check for the correct number and type of triangle vertices
-        if (Iterables.stream(interiorNode.getTriangleVertexes())
-                .map(o -> (Vertex) o)
-                .anyMatch(v -> v.getVertexType() != VertexType.SIMPLE_NODE)) {
-            return Optional.empty();
-        }
-
         // unpack a tuple in a language without pattern matching...
         Vertex v0 = interiorNode.getTriangleVertexes().getValue0();
         Vertex v1 = interiorNode.getTriangleVertexes().getValue1();
         Vertex v2 = interiorNode.getTriangleVertexes().getValue2();
+
+        // check for the correct number and type of triangle vertices
+        if (Stream.of(v0, v1, v2)
+                .anyMatch(v -> v.getVertexType() != VertexType.SIMPLE_NODE)) {
+            return Optional.empty();
+        }
 
         OrientedInterior i = new OrientedInterior();
         i.i = interiorNode;

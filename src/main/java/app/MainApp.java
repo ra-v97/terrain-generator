@@ -6,12 +6,13 @@ import org.apache.log4j.Logger;
 import org.javatuples.Pair;
 import transformation.Transformation;
 import transformation.TransformationP1;
+import transformation.TransformationP7;
 
 public class MainApp {
 
     private static Logger log = Logger.getLogger(MainApp.class.getName());
 
-    private static Pair<ModelGraph, InteriorNode> task1(){
+    private static Pair<ModelGraph, InteriorNode> task1() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
@@ -25,7 +26,7 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
-    private static Pair<ModelGraph, InteriorNode> task5(){
+    private static Pair<ModelGraph, InteriorNode> task5() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
@@ -41,9 +42,9 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
-    private static Pair<ModelGraph, InteriorNode> task11(){
+    private static Pair<ModelGraph, InteriorNode> task11() {
         ModelGraph graph = new ModelGraph("testGraph");
-        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
         Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
         Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 0.5, 0.0));
@@ -59,9 +60,9 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
-	  private static Pair<ModelGraph, InteriorNode> task15(){
+    private static Pair<ModelGraph, InteriorNode> task15() {
         ModelGraph graph = new ModelGraph("testGraph");
-        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
         Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
         Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.75, 1, 0.0));
@@ -75,11 +76,11 @@ public class MainApp {
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v3, v5, h2, h4);
         return new Pair<>(graph, in1);
-	  }
+    }
 
-    private static Pair<ModelGraph, InteriorNode> task17(){
+    private static Pair<ModelGraph, InteriorNode> task17() {
         ModelGraph graph = new ModelGraph("testGraph");
-        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
         Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
         Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 0.5, 0.0));
@@ -97,7 +98,7 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
-    private static Pair<ModelGraph, InteriorNode> task7() {
+    private static Pair<ModelGraph, InteriorNode> task13() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 0.0, 0.0));
