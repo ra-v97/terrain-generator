@@ -1,11 +1,10 @@
 package transformation;
 
 import model.*;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TransformationP6 implements Transformation {
@@ -19,62 +18,64 @@ public class TransformationP6 implements Transformation {
     private static final String SIMPLE_VERTEX_2 = "vertex2";
 
 
-    private Map<String, Vertex> mapVerticesToModel(ModelGraph graph){
+    private Map<String, Vertex> mapVerticesToModel(ModelGraph graph, InteriorNode interiorNode){
         Map<String, Vertex> verticesMap = new HashMap<>();
-        Collection<GraphEdge> edges = graph.getEdges();
-        GraphEdge wholeEdge = null;
 
-        for(GraphEdge edge: edges){
-            Pair<GraphNode, GraphNode> edgeNodes = edge.getEdgeNodes();
-            GraphNode graphNode0 = edgeNodes.getValue0();
-            GraphNode graphNode1 = edgeNodes.getValue1();
+        Triplet<Vertex, Vertex, Vertex> triangleSimple = interiorNode.getTriangleVertexes();
+        Vertex vertexA = triangleSimple.getValue0();
+        Vertex vertexB = triangleSimple.getValue1();
+        Vertex vertexC = triangleSimple.getValue2();
 
-            if(graphNode0 instanceof Vertex && graphNode1 instanceof Vertex){
-                Vertex node0 = (Vertex) graphNode0;
-                Vertex node1 = (Vertex) graphNode1;
+        Vertex vertexD = graph.getVertexBetween(vertexA, vertexB).orElse(null);
+        Vertex vertexE = graph.getVertexBetween(vertexB, vertexC).orElse(null);
+        Vertex vertexF = graph.getVertexBetween(vertexA, vertexC).orElse(null);
 
-                if(node0.getVertexType() == VertexType.SIMPLE_NODE && node1.getVertexType() == VertexType.SIMPLE_NODE){
-                    verticesMap.put(SIMPLE_VERTEX_1, node0);
-                    verticesMap.put(SIMPLE_VERTEX_5, node1);
-                    wholeEdge = edge;
-                }
-            }
-
+        if(vertexD == null){
+            verticesMap.put(SIMPLE_VERTEX_1, vertexA);
+            verticesMap.put(SIMPLE_VERTEX_5, vertexB);
+            verticesMap.put(SIMPLE_VERTEX_3, vertexC);
         }
 
-        for(GraphEdge edge: edges){
-            if(edge.equals(wholeEdge)){
-                continue;
-            }
-            Pair<GraphNode, GraphNode> edgeNodes = edge.getEdgeNodes();
-            GraphNode graphNode0 = edgeNodes.getValue0();
-            GraphNode graphNode1 = edgeNodes.getValue1();
-
-            if(graphNode0 instanceof Vertex && graphNode1 instanceof Vertex) {
-                Vertex node0 = (Vertex) graphNode0;
-                Vertex node1 = (Vertex) graphNode1;
-
-                if (node0 == verticesMap.get(SIMPLE_VERTEX_1)) verticesMap.put(HANGING_NODE_2, node1);
-                if (node1 == verticesMap.get(SIMPLE_VERTEX_1)) verticesMap.put(HANGING_NODE_2, node0);
-
-                if (node0 == verticesMap.get(SIMPLE_VERTEX_5)) verticesMap.put(HANGING_NODE_4, node1);
-                if (node1 == verticesMap.get(SIMPLE_VERTEX_5)) verticesMap.put(HANGING_NODE_4, node0);
-            }
+        if(vertexE == null){
+            verticesMap.put(SIMPLE_VERTEX_1, vertexB);
+            verticesMap.put(SIMPLE_VERTEX_5, vertexC);
+            verticesMap.put(SIMPLE_VERTEX_3, vertexA);
         }
 
-        for(GraphNode node: graph.getVertices()){
-            if(node != verticesMap.get(SIMPLE_VERTEX_1) &&
-                    node != verticesMap.get(SIMPLE_VERTEX_5) &&
-                    node != verticesMap.get(HANGING_NODE_2) &&
-                    node != verticesMap.get(HANGING_NODE_4)) verticesMap.put(SIMPLE_VERTEX_3, (Vertex) node);
+        if(vertexF == null){
+            verticesMap.put(SIMPLE_VERTEX_1, vertexA);
+            verticesMap.put(SIMPLE_VERTEX_5, vertexC);
+            verticesMap.put(SIMPLE_VERTEX_3, vertexB);
         }
+
+        List<Vertex> hangingNodes = interiorNode.getAssociatedNodes();
+
+        Vertex hanging2;
+        Vertex hanging4;
+
+        if(verticesMap.get(SIMPLE_VERTEX_1).getEdgeBetween(hangingNodes.get(0)) != null){
+            hanging2 = hangingNodes.get(0);
+            hanging4 = hangingNodes.get(1);
+        }
+        else{
+            hanging2 = hangingNodes.get(1);
+            hanging4 = hangingNodes.get(0);
+        }
+
+        verticesMap.put(HANGING_NODE_2, hanging2);
+        verticesMap.put(HANGING_NODE_4, hanging4);
 
         return verticesMap;
     }
 
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode){
-        Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph);
+        List<Vertex> hangingNodes = interiorNode.getAssociatedNodes();
+
+        if(hangingNodes.size() != 2){
+            return false;
+        }
+        Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph, interiorNode);
 
         if(verticesMap.size() != 5){
             System.out.println(verticesMap.size());
@@ -109,7 +110,7 @@ public class TransformationP6 implements Transformation {
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
 
-        Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph);
+        Map<String, Vertex> verticesMap = this.mapVerticesToModel(graph, interiorNode);
 
         if(this.isConditionCompleted(graph, interiorNode)){
 
