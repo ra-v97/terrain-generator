@@ -7,8 +7,10 @@ import org.graphstream.graph.implementations.MultiGraph;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ModelGraph extends MultiGraph {
 
@@ -88,10 +90,12 @@ public class ModelGraph extends MultiGraph {
     }
 
     public void removeInterior(String id) {
-        edges.values().stream()
+        List<String> edgesToRemove = edges.values().stream()
                 .filter(graphEdge -> graphEdge.getEdgeNodes().contains(interiors.get(id)))
                 .map(GraphEdge::getId)
-                .forEach(this::removeEdge);
+                .collect(Collectors.toList());
+        edgesToRemove
+                .forEach(this::deleteEdge);
         interiors.remove(id);
         this.removeNode(id);
     }
@@ -114,8 +118,12 @@ public class ModelGraph extends MultiGraph {
 
     public void deleteEdge(GraphNode n1, GraphNode n2) {
         Edge edge = n1.getEdgeBetween(n2);
-        edges.remove(edge.getId());
-        this.removeEdge(n1, n2);
+        deleteEdge(edge.getId());
+    }
+
+    public void deleteEdge(String edgeId){
+        edges.remove(edgeId);
+        this.removeEdge(edgeId);
     }
 
     public Optional<GraphEdge> getEdgeById(String id) {
@@ -145,4 +153,5 @@ public class ModelGraph extends MultiGraph {
     public GraphEdge insertEdge(GraphEdge ge) {
         return insertEdge(ge.getId(), ge.getNode0(), ge.getNode1(), ge.getB());
     }
+
 }

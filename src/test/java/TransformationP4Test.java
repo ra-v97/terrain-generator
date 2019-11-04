@@ -101,7 +101,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         ModelGraph transformed = transformation.transformGraph(graph, interior);
         System.out.println(transformed.getEdges());
-        assertEquals(15, transformed.getEdges().size());
+        assertEquals(12, transformed.getEdges().size());
     }
 
     @Test
