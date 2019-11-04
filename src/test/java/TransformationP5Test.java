@@ -1,5 +1,6 @@
 import model.*;
 import org.javatuples.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP4;
@@ -13,6 +14,7 @@ public class TransformationP5Test extends AbstractTransformationTest {
     private Transformation transformation = new TransformationP4();
 
     @Test
+    @Ignore("P5 not implemented")
     public void conditionPassesWithObtuseTriangle() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
@@ -108,6 +110,7 @@ public class TransformationP5Test extends AbstractTransformationTest {
     }
 
     @Test
+    @Ignore("P5 not implemented")
     public void transformationProducesNewOppositeEdgesWithCorrectParams() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
