@@ -8,7 +8,7 @@ import org.javatuples.Triplet;
 
 public final class MapProcessingUtil {
 
-    public static double calculateTerrainAproximationError(InteriorNode interiorNode, TerrainMap terrainMap){
+    public static double calculateTerrainApproximationError(InteriorNode interiorNode, TerrainMap terrainMap){
         Triplet<Vertex, Vertex, Vertex> triangleVertexes = interiorNode.getTriangle();
 
         Plane plane = new Plane(triangleVertexes.getValue0().getCoordinates(),

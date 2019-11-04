@@ -9,11 +9,19 @@ public class TerrainMap {
 
     private static final double EPSILON = Double.MIN_VALUE;
 
-    private static final int MAP_HIGH = 100;
+    private static final int MAP_HIGH = 5;
 
-    private static final int MAP_WIGHT = 100;
+    private static final int MAP_WIGHT = 5;
 
     private final Point3d[][] terrainMap = new Point3d[MAP_HIGH][MAP_WIGHT];
+
+    public void fillMapWithExampleData(){
+        for(int i = 0 ; i < MAP_HIGH ; i++){
+            for(int j = 0 ; j < MAP_WIGHT ; j++) {
+                terrainMap[i][j] = new Point3d(i,j,1.0);
+            }
+        }
+    }
 
     public List<Point3d> getAllPointsInTriangleArea(InteriorNode triangle){
         List<Point3d> trianglePoints = new LinkedList<>();
