@@ -87,11 +87,11 @@ public class TransformationP2 implements Transformation {
 
     private boolean isConditionFulfilled(GraphEdge edge1, GraphEdge edge2, GraphEdge edge3) {
         return !edge1.getB() && isEdgeLengthConditionFulfilled(edge1, edge2, edge3)
-                && !(!edge2.getB() || edge1.getL() != edge2.getL()) && (!edge3.getB() || edge3.getL() != edge1.getL());
+                && !((edge2.getB() && edge1.getL() == edge2.getL()) || (edge3.getB() && edge3.getL() == edge1.getL()));
     }
 
     private boolean isEdgeLengthConditionFulfilled(GraphEdge edge1, GraphEdge edge2, GraphEdge edge3) {
-        return !(edge1.getL() < edge2.getL()) && !(edge1.getL() < edge3.getL());
+        return (edge1.getL() >= edge2.getL()) && (edge1.getL() >= edge3.getL());
     }
 
     @Override
