@@ -14,19 +14,44 @@ public class TransformationP2 implements Transformation {
 
     private static final String VERTEX_MAP_SIMPLE_VERTEX_2_KEY = "simpleVertex2";
 
-    private static Map<String, Vertex> mapTriangleVertexesToModel(Triplet<Vertex, Vertex, Vertex> triangle) {
+    private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle) {
         Map<String, Vertex> triangleModel = new HashMap<>();
+        GraphEdge edge = getLongestEdge(graph, triangle);
+
+        triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_1_KEY, edge.getNode0());
+        triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_2_KEY, edge.getNode1());
+
         for (Object o : triangle) {
             Vertex v = (Vertex) o;
-            if (triangleModel.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY) == null) {
-                triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_1_KEY, v);
-            } else if (triangleModel.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY) == null) {
-                triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_2_KEY, v);
-            } else {
+            if (v != edge.getNode0() && v != edge.getNode1()) {
                 triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_3_KEY, v);
             }
         }
         return triangleModel;
+    }
+
+    private static GraphEdge getLongestEdge(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle) {
+        Vertex v1 = triangle.getValue0();
+        Vertex v2 = triangle.getValue1();
+        Vertex v3 = triangle.getValue2();
+        GraphEdge edge1 = graph.getEdgeBetweenNodes(v1, v2)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge edge2 = graph.getEdgeBetweenNodes(v2, v3)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge edge3 = graph.getEdgeBetweenNodes(v1, v3)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        if(edge1.getL() > edge2.getL()) {
+            if (edge1.getL() > edge3.getL()) {
+                return edge1;
+            } else {
+                return edge3;
+            }
+        } else if(edge2.getL() > edge3.getL()) {
+            return edge2;
+        } else {
+            return edge3;
+        }
+
     }
 
     private static int getSimpleVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
@@ -56,7 +81,7 @@ public class TransformationP2 implements Transformation {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
         if (!isGraphValidForTransformation(interiorNode, triangle)) return false;
 
-        Map<String, Vertex> model = mapTriangleVertexesToModel(triangle);
+        Map<String, Vertex> model = mapTriangleVertexesToModel(graph, triangle);
         Vertex simpleVertex1 = model.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY);
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
         Vertex simpleVertex3 = model.get(VERTEX_MAP_SIMPLE_VERTEX_3_KEY);
@@ -69,7 +94,7 @@ public class TransformationP2 implements Transformation {
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
         GraphEdge edge2 = graph.getEdgeBetweenNodes(simpleVertex2, simpleVertex3)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
-        GraphEdge edge3 = graph.getEdgeBetweenNodes(simpleVertex3, simpleVertex2)
+        GraphEdge edge3 = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex3)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
         return isConditionFulfilled(edge1, edge2, edge3);
@@ -79,10 +104,7 @@ public class TransformationP2 implements Transformation {
         if (!interiorNode.isPartitionRequired()) {
             return false;
         }
-        if (getSimpleVertexCount(triangle) != 3 || getHangingVertexCount(triangle) != 0) {
-            return false;
-        }
-        return true;
+        return getSimpleVertexCount(triangle) == 3 && getHangingVertexCount(triangle) == 0;
     }
 
     private boolean isConditionFulfilled(GraphEdge edge1, GraphEdge edge2, GraphEdge edge3) {
@@ -96,11 +118,12 @@ public class TransformationP2 implements Transformation {
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
-        Map<String, Vertex> model = mapTriangleVertexesToModel(interiorNode.getTriangleVertexes());
+        Map<String, Vertex> model = mapTriangleVertexesToModel(graph, interiorNode.getTriangleVertexes());
 
         Vertex simpleVertex1 = model.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY);
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
         Vertex simpleVertex3 = model.get(VERTEX_MAP_SIMPLE_VERTEX_3_KEY);
+
 
         GraphEdge edge1 = graph.getEdgeBetweenNodes(simpleVertex1, simpleVertex2)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
