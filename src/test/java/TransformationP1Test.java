@@ -173,7 +173,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         ModelGraph graph = createEmptyGraph();
         Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.2, 0.0, -6.0));
         Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 2.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.HANGING_NODE, new Point3d(1.0, 6.0, -8.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 6.0, -8.0));
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
