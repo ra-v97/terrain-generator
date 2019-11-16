@@ -44,8 +44,8 @@ public final class MapProcessingUtil {
         return graph;
     }
 
-    public static List<InteriorNode> markTrianglesForRefinement(TerrainMap terrainMap, double errorEps) {
-        List<InteriorNode> trianglesForRefinement = spanGraphOverTerrain(terrainMap).getInteriors().stream()
+    public static List<InteriorNode> markTrianglesForRefinement(ModelGraph graph, TerrainMap terrainMap, double errorEps) {
+        List<InteriorNode> trianglesForRefinement = graph.getInteriors().stream()
                 .filter(i -> calculateTerrainApproximationError(i, terrainMap) > errorEps)
                 .collect(Collectors.toList());
         trianglesForRefinement.forEach(i -> i.setPartitionRequired(true));

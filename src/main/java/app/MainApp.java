@@ -136,17 +136,7 @@ public class MainApp {
         TerrainMap map = new TerrainMap(5, 5);
         map.fillMapWithExampleData();
 
-        ModelGraph graph = new ModelGraph("testGraph");
-        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 2.0));
-        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(5.0, 0.0, 2.0));
-        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(0.0, 3.0, 2.0));
-        graph.insertEdge("e1", v1, v2, true);
-        graph.insertEdge("e2", v2, v3, true);
-        graph.insertEdge("e3", v3, v1, true);
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
-
-        System.out.println(map.getAllPointsInTriangleArea(in1).size());
-        System.out.println(MapProcessingUtil.calculateTerrainApproximationError(in1, map));
-        System.out.println(MapProcessingUtil.markTrianglesForRefinement(map, 1 - 1e-7));
+        ModelGraph graph = MapProcessingUtil.spanGraphOverTerrain(map);
+        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 1 - 1e-7));
     }
 }
