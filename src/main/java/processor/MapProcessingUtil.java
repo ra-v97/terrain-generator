@@ -144,7 +144,7 @@ public final class MapProcessingUtil {
         }
 
         private double dot(Point3d point) {
-            return vx * point.getX() + vy * point.getY() + vx * point.getZ();
+            return vx * point.getX() + vy * point.getY() + vz * point.getZ();
         }
     }
 }
