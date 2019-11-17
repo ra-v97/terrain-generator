@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ModelGraph extends MultiGraph {
 
@@ -131,12 +132,16 @@ public class ModelGraph extends MultiGraph {
         return Optional.ofNullable(edges.get(id));
     }
 
-    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+    public List<Vertex> getVertexesBetween(Vertex beginning, Vertex end) {
         return this.vertexes
                 .values()
                 .stream()
                 .filter(v -> isVertexBetween(v, beginning, end))
-                .findFirst();
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+        return this.getVertexesBetween(beginning, end).stream().findFirst();
     }
 
     public GraphEdge getTraingleLongestEdge(InteriorNode interiorNode){
