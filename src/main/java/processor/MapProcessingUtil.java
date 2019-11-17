@@ -82,7 +82,7 @@ public final class MapProcessingUtil {
         private final double coefficientC;
         private final double coefficientD;
 
-        private Plane(Point3d p1, Point3d p2, Point3d p3) {
+        public Plane(Point3d p1, Point3d p2, Point3d p3) {
             Vector3d v1 = new Vector3d(p1, p2);
             Vector3d v2 = new Vector3d(p1, p3);
             Vector3d crossProduct = v1.cross(v2);
@@ -93,7 +93,7 @@ public final class MapProcessingUtil {
             coefficientD = crossProduct.dot(p3);
         }
 
-        private double getZCoordinate(double x0, double y0) {
+        public double getZCoordinate(double x0, double y0) {
             if (coefficientC == 0) {
                 return 0;
             }
