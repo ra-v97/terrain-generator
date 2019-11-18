@@ -79,6 +79,10 @@ public class TerrainMap {
         return points;
     }
 
+    public void addPoint(int x, int y, Point3d val) {
+        points[x][y] = val;
+    }
+
     public static final class TriangleSquareBorder {
         private final double minX;
         private final double maxX;

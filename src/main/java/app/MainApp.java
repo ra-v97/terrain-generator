@@ -6,6 +6,13 @@ import org.apache.log4j.Logger;
 import org.javatuples.Pair;
 import processor.MapProcessingUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import java.nio.file.Files;
+
 public class MainApp {
 
     private static Logger log = Logger.getLogger(MainApp.class.getName());
@@ -114,29 +121,36 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
+    private TerrainMap loadData() {
+        int dimension = 100;
+        File file = new File(this.getClass().getResource("/poland.data").getPath());
+        byte[] bytes;
+        try {
+            bytes = Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+        ShortBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+        TerrainMap map = new TerrainMap(dimension, dimension);
+        for (Integer i = 0; i < dimension; i++) {
+            for (Integer j = 0; j < dimension; j++) {
+                map.addPoint(j, i, new Point3d(j, i, buffer.get(i * dimension + j)));
+            }
+            if (i % 10 == 0)
+                System.out.println("Row " + i);
+        }
+        return map;
+    }
+
     public static void main(String[] args) {
         BasicConfigurator.configure();
 
-//        Pair<ModelGraph, InteriorNode> task = task1();
-//        ModelGraph graph = task.getValue0();
-//        InteriorNode interiorNode = task.getValue1();
-//
-//        Transformation t1 = new TransformationP1();
-//        log.info(String.format("Condition state for transformation P1: %b", t1.isConditionCompleted(graph, interiorNode)));
-//
-//        graph.display();
-//
-//        try {
-//            Thread.sleep(3000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        t1.transformGraph(graph, interiorNode);
-
-        TerrainMap map = new TerrainMap(5, 5);
-        map.fillMapWithExampleData();
-
+        MainApp app = new MainApp();
+        TerrainMap map = app.loadData();
+        Runtime.getRuntime().gc();
         ModelGraph graph = MapProcessingUtil.spanGraphOverTerrain(map);
-        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 1 - 1e-7));
+        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1));
+        graph.display();
     }
 }
