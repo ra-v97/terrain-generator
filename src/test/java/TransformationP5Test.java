@@ -1,70 +1,75 @@
 import model.*;
 import org.javatuples.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP4;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TransformationP4Test extends AbstractTransformationTest {
+public class TransformationP5Test extends AbstractTransformationTest {
+
+    //todo Change P4 to P5 once it's implemented
+
     private Transformation transformation = new TransformationP4();
 
     @Test
-    public void conditionPassesWithObtuseTriangle(){
+    @Ignore("P5 not implemented")
+    public void conditionPassesWithObtuseTriangle() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void transformationProducesTwoInteriorNodes(){
+    public void transformationProducesTwoInteriorNodes() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         assertEquals(2, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getInteriors().size());
     }
 
     @Test
-    public void conditionFailsWithAcuteTriangle(){
+    public void conditionFailsWithAcuteTriangle() {
         ModelGraph graph = createAcuteTriangleGraph(true);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForAcuteTriangle(){
+    public void conditionFailsWhenPartitioningIsNotNeeded() {
         ModelGraph graph = createObtuseTriangleGraph(false);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForObtuseTriangle(){
-        ModelGraph graph = createObtuseTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForRightTriangle(){
-        ModelGraph graph = createRightTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithRightTriangle(){
+    public void conditionFailsWithRightTriangle() {
         ModelGraph graph = createRightTriangleGraph(true);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void conditionFailsWithoutBorderEdges(){
+    public void conditionFailsWithIsoscelesTriangle() {
+        ModelGraph graph = createIsoscelesTriangleGraph(true);
+        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    }
+
+    @Test
+    public void conditionFailsWithoutBorderEdges() {
         ModelGraph graph = createInternalObtuseTriangleGraph(true);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void conditionFailsWithImproperBorderEdges(){
+    public void conditionFailsWithImproperBorderEdges() {
         ModelGraph graph = createSemiInternalObtuseTriangleGraph(true);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
     @Test
-    public void transformationProducesOneNewSimpleVertex(){
+    public void transformationProducesOneNewVertex() {
+        ModelGraph graph = createObtuseTriangleGraph(true);
+        assertEquals(4, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getVertices().size());
+    }
+
+    @Test
+    public void transformationProducesOneNewSimpleVertex() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         transformation.transformGraph(graph, interior);
@@ -72,7 +77,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesTheNewVertexOnTheEdge(){
+    public void transformationProducesTheNewVertexOnTheEdge() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         transformation.transformGraph(graph, interior);
@@ -83,7 +88,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesNewInteriorNodesWithCorrectParams(){
+    public void transformationProducesNewInteriorNodesWithCorrectParams() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
 
@@ -96,7 +101,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
 
 
     @Test
-    public void transformationProducesNewEdges(){
+    public void transformationProducesNewEdges() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         ModelGraph transformed = transformation.transformGraph(graph, interior);
@@ -105,7 +110,8 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesNewOppositeEdgesWithCorrectParams(){
+    @Ignore("P5 not implemented")
+    public void transformationProducesNewOppositeEdgesWithCorrectParams() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
@@ -121,7 +127,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesNewOppositeEdgesWithCorrectLength(){
+    public void transformationProducesNewOppositeEdgesWithCorrectLength() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
@@ -137,7 +143,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesNewInternalEdgeWithCorrectParams(){
+    public void transformationProducesNewInternalEdgeWithCorrectParams() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         transformation.transformGraph(graph, interior);
@@ -149,7 +155,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void transformationProducesNewInternalEdgeWithCorrectLength(){
+    public void transformationProducesNewInternalEdgeWithCorrectLength() {
         ModelGraph graph = createObtuseTriangleGraph(true);
         InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
         transformation.transformGraph(graph, interior);
@@ -171,7 +177,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
 
@@ -189,7 +195,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
 
@@ -207,7 +213,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
 
@@ -225,7 +231,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
 
@@ -243,7 +249,25 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
         GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
         GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
+
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
+
+        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
+    }
+
+    private ModelGraph createIsoscelesTriangleGraph(boolean needsPartitioning) {
+        ModelGraph graph = createEmptyGraph();
+        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(10.0, 0.0, 0.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(5.0, 10.0, 0.0));
+
+        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(5.0, 0.0, 0.0));
+
+        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
+        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
+        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), false);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
 

@@ -29,6 +29,10 @@ public class InteriorNode extends GraphNode {
         this.associatedNodes.addAll(Arrays.asList(associatedNodes));
     }
 
+    public Triplet<Vertex, Vertex, Vertex> getTriangle(){
+        return triangle;
+    }
+
     public void setPartitionRequired(boolean partitionRequired) {
         R = partitionRequired;
     }
