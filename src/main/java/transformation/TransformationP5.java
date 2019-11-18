@@ -111,7 +111,7 @@ public class TransformationP5 implements Transformation {
     }
 
     private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph) {
-        List<Vertex> between = graph.getVertexBetween(v1, v2);
+        List<Vertex> between = graph.getVertexesBetween(v1, v2);
 
         return between.stream().filter(e -> e.getVertexType() == VertexType.HANGING_NODE).findAny();
     }
