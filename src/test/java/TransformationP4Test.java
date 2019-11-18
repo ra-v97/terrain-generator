@@ -28,8 +28,20 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     @Test
-    public void conditionFailsWhenPartitioningIsNotNeeded(){
+    public void conditionFailsWhenPartitioningIsNotNeededForAcuteTriangle(){
         ModelGraph graph = createObtuseTriangleGraph(false);
+        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    }
+
+    @Test
+    public void conditionFailsWhenPartitioningIsNotNeededForObtuseTriangle(){
+        ModelGraph graph = createObtuseTriangleGraph(false);
+        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    }
+
+    @Test
+    public void conditionFailsWhenPartitioningIsNotNeededForRightTriangle(){
+        ModelGraph graph = createRightTriangleGraph(false);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
     }
 
@@ -49,12 +61,6 @@ public class TransformationP4Test extends AbstractTransformationTest {
     public void conditionFailsWithImproperBorderEdges(){
         ModelGraph graph = createSemiInternalObtuseTriangleGraph(true);
         assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void transformationProducesOneNewVertex(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        assertEquals(4, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getVertices().size());
     }
 
     @Test

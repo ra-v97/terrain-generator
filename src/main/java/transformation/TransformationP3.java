@@ -3,12 +3,14 @@ package transformation;
 import model.*;
 import org.javatuples.Triplet;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class TransformationP3 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
 
         return areAllVertexType(triangle) &&
                 isTransformationConditionFulfilled(graph, triangle);
@@ -16,7 +18,7 @@ public class TransformationP3 implements Transformation {
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriage(interiorNode.getTriangleVertexes(), graph);
+        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
 
         Vertex first = triangle.getValue0();
         Vertex second = triangle.getValue1();
@@ -59,13 +61,12 @@ public class TransformationP3 implements Transformation {
     }
 
     private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph){
-        Optional<Vertex> between = graph.getVertexBetween(v1, v2);
-        
-        if(between.isPresent() && between.get().getVertexType() == VertexType.HANGING_NODE){
-            return between;
-        }
+        List<Vertex> available = graph.getVertexesBetween(v1, v2);
 
-        return Optional.empty();
+        return available
+                .stream()
+                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
+                .findAny();
     }
 
     private Vertex getHangingVertexBetween(Vertex v1, Vertex v2, ModelGraph graph){
@@ -87,7 +88,7 @@ public class TransformationP3 implements Transformation {
         return (L1.getL() + L2.getL()) >= L3.getL() && (L1.getL() + L2.getL()) >= L4.getL();
     }
 
-    private Triplet<Vertex, Vertex, Vertex> getOrderedTriage(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph){
+    private Triplet<Vertex, Vertex, Vertex> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph){
         if(getHangingVertexBetweenOp(v.getValue0(), v.getValue1(), graph).isPresent()){
             return v;
         } else if (getHangingVertexBetweenOp(v.getValue0(), v.getValue2(), graph).isPresent()){
