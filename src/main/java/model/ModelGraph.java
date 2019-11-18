@@ -4,9 +4,11 @@ import common.ElementAttributes;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
+import org.javatuples.Triplet;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ModelGraph extends MultiGraph {
 
@@ -126,12 +128,37 @@ public class ModelGraph extends MultiGraph {
         return Optional.ofNullable(edges.get(id));
     }
 
-    public List<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+    public List<Vertex> getVertexesBetween(Vertex beginning, Vertex end) {
         return this.vertexes
                 .values()
                 .stream()
                 .filter(v -> isVertexBetween(v, beginning, end))
                 .collect(Collectors.toList());
+    }
+
+    public Optional<Vertex> getVertexBetween(Vertex beginning, Vertex end) {
+        return this.getVertexesBetween(beginning, end).stream().findFirst();
+    }
+
+    public GraphEdge getTraingleLongestEdge(InteriorNode interiorNode){
+        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangle();
+        Vertex v1 = triangle.getValue0();
+        Vertex v2 = triangle.getValue1();
+        Vertex v3 = triangle.getValue2();
+
+        GraphEdge edge1 = getEdgeBetweenNodes(v1, v2)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge edge2 = getEdgeBetweenNodes(v2, v3)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        GraphEdge edge3 = getEdgeBetweenNodes(v1, v3)
+                .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+
+        if(edge1.getL() >= edge2.getL() && edge1.getL() >= edge3.getL()) {
+            return edge1;
+        }else if(edge2.getL() >= edge3.getL()) {
+            return edge2;
+        }
+        return edge3;
     }
 
     private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end) {
