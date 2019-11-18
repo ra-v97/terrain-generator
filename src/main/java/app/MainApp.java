@@ -5,6 +5,9 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.javatuples.Pair;
 import processor.MapProcessingUtil;
+import transformation.Transformation;
+import transformation.TransformationP1;
+import transformation.TransformationP2;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainApp {
 
@@ -122,7 +127,6 @@ public class MainApp {
     }
 
     private TerrainMap loadData() {
-        int dimension = 100;
         File file = new File(this.getClass().getResource("/poland.data").getPath());
         byte[] bytes;
         try {
@@ -130,6 +134,7 @@ public class MainApp {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
+        int dimension = (int) Math.floor(Math.sqrt(bytes.length/2f));
 
         ShortBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
         TerrainMap map = new TerrainMap(dimension, dimension);
@@ -150,7 +155,29 @@ public class MainApp {
         TerrainMap map = app.loadData();
         Runtime.getRuntime().gc();
         ModelGraph graph = MapProcessingUtil.spanGraphOverTerrain(map);
-        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1));
         graph.display();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1));
+        List<Transformation> transformations = Arrays.asList(new TransformationP1(), new TransformationP2());
+        MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1).forEach(interiorNode ->
+        {
+            for(Transformation p : transformations){
+                try{
+                    if(p.isConditionCompleted(graph, interiorNode)){
+                        System.out.println(p.getClass());
+                        p.transformGraph(graph, interiorNode);
+                        break;
+                    }
+                }catch (Exception e){
+                    break;
+                }
+
+            }
+        });
+
     }
 }
