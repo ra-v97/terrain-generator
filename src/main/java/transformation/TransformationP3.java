@@ -5,20 +5,22 @@ import org.javatuples.Triplet;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TransformationP3 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
+        Optional<Triplet<Vertex, Vertex, Vertex>> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode);
 
-        return areAllVertexType(triangle) &&
-                isTransformationConditionFulfilled(graph, triangle);
+        return triangle.isPresent() && areAllVertexType(triangle.get()) &&
+                isTransformationConditionFulfilled(graph, triangle.get());
     }
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
+        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode)
+                .orElseThrow(() -> new RuntimeException("Configuration not found"));
 
         Vertex first = triangle.getValue0();
         Vertex second = triangle.getValue1();
@@ -88,15 +90,31 @@ public class TransformationP3 implements Transformation {
         return (L1.getL() + L2.getL()) >= L3.getL() && (L1.getL() + L2.getL()) >= L4.getL();
     }
 
-    private Triplet<Vertex, Vertex, Vertex> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph){
-        if(getHangingVertexBetweenOp(v.getValue0(), v.getValue1(), graph).isPresent()){
-            return v;
-        } else if (getHangingVertexBetweenOp(v.getValue0(), v.getValue2(), graph).isPresent()){
-            return new Triplet<>(v.getValue2(), v.getValue0(), v.getValue1());
-        } else if(getHangingVertexBetweenOp(v.getValue1(), v.getValue2(), graph).isPresent()) {
-            return new Triplet<>(v.getValue1(), v.getValue2(), v.getValue0());
+    private Optional<Triplet<Vertex, Vertex, Vertex>> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph, InteriorNode interiorNode){
+        List<Vertex> hanging =
+                interiorNode
+                .getAssociatedNodes()
+                .stream()
+                .filter(e -> e.getVertexType() == VertexType.HANGING_NODE)
+                .collect(Collectors.toList());
+
+        if (hanging.size() != 1) {
+            return Optional.empty();
         }
-        throw new RuntimeException("Configuration with hanging vertex between 2 vertexes was not found");
+
+        Vertex hangingVertex = hanging.get(0);
+        if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue0()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue1()).isPresent()){
+            return Optional.of(v);
+        } else if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue0()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue2()).isPresent()){
+            return Optional.of(new Triplet<>(v.getValue2(), v.getValue0(), v.getValue1()));
+        } else if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue1()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue2()).isPresent()){
+            return Optional.of(new Triplet<>(v.getValue1(), v.getValue2(), v.getValue0()));
+        }
+
+        return Optional.empty();
     }
 
     private boolean areAllVertexType(Triplet<Vertex, Vertex, Vertex> triangle) {

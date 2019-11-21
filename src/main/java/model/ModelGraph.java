@@ -2,13 +2,13 @@ package model;
 
 import common.ElementAttributes;
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.Element;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.javatuples.Triplet;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ModelGraph extends MultiGraph {
 
@@ -23,7 +23,8 @@ public class ModelGraph extends MultiGraph {
     }
 
     public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
-        return getEdgeById(v1.getEdgeBetween(v2).getId());
+        Optional<Edge> edge = Optional.ofNullable(v1.getEdgeBetween(v2));
+        return edge.map(Element::getId).flatMap(this::getEdgeById);
     }
 
     public Vertex insertVertex(Vertex vertex) {
@@ -72,6 +73,7 @@ public class ModelGraph extends MultiGraph {
         Node node = this.addNode(interiorNode.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, interiorNode.getXCoordinate(), interiorNode.getYCoordinate(), interiorNode.getZCoordinate());
+        node.addAttribute("ui.class", "important");
         interiors.put(id, interiorNode);
         insertEdge(id.concat(v1.getId()), interiorNode, v1);
         insertEdge(id.concat(v2.getId()), interiorNode, v2);
@@ -129,6 +131,9 @@ public class ModelGraph extends MultiGraph {
     }
 
     public List<Vertex> getVertexesBetween(Vertex beginning, Vertex end) {
+        if(beginning.getEdgeBetween(end) != null){
+            return new LinkedList<>();
+        }
         return this.vertexes
                 .values()
                 .stream()
