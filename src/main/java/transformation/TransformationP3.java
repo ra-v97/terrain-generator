@@ -11,16 +11,38 @@ import java.util.stream.Stream;
 public class TransformationP3 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
+        Boolean areAllSimple = interiorNode
+                .getTriangleVertexes()
+                .toList()
+                .stream()
+                .map(e -> ((Vertex)e).getVertexType() == VertexType.SIMPLE_NODE)
+                .reduce(true, (acc, e) -> acc && e);
+
+        if(!areAllSimple){
+            return false;
+        }
+
         Optional<Triplet<Vertex, Vertex, Vertex>> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode);
 
-        return triangle.isPresent() && areAllVertexType(triangle.get()) &&
-                isTransformationConditionFulfilled(graph, triangle.get());
+        return triangle.isPresent() &&
+                (isTransformationConditionFulfilled(graph, triangle.get())
+                        || isTransformationConditionFulfilled(graph, mirror(triangle.get())));
+    }
+
+    private Triplet<Vertex, Vertex, Vertex> mirror(Triplet<Vertex, Vertex, Vertex> x) {
+        return new Triplet<>(x.getValue1(), x.getValue0(), x.getValue2());
     }
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode)
+        Triplet<Vertex, Vertex, Vertex> triangle = null;
+        Triplet<Vertex, Vertex, Vertex> x = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode)
                 .orElseThrow(() -> new RuntimeException("Configuration not found"));
+        if(isTransformationConditionFulfilled(graph, x)) {
+            triangle = x;
+        } else {
+            triangle = mirror(x);
+        }
 
         Vertex first = triangle.getValue0();
         Vertex second = triangle.getValue1();
@@ -87,7 +109,9 @@ public class TransformationP3 implements Transformation {
         GraphEdge L3 = graph.getEdgeById(second.getEdgeBetween(third).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
         GraphEdge L4 = graph.getEdgeById(third.getEdgeBetween(first).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
 
-        return (L1.getL() + L2.getL()) >= L3.getL() && (L1.getL() + L2.getL()) >= L4.getL();
+        final double eps = .001;
+
+        return Math.abs(L1.getL() + L2.getL() - L3.getL()) >= eps && Math.abs(L1.getL() + L2.getL() - L4.getL()) >= eps;
     }
 
     private Optional<Triplet<Vertex, Vertex, Vertex>> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph, InteriorNode interiorNode){
@@ -115,16 +139,5 @@ public class TransformationP3 implements Transformation {
         }
 
         return Optional.empty();
-    }
-
-    private boolean areAllVertexType(Triplet<Vertex, Vertex, Vertex> triangle) {
-        return triangle.toList().stream().map(e -> {
-            Vertex v = (Vertex)e;
-            return isVertexType(v);
-        }).reduce(true, (acc, e) -> acc && e);
-    }
-
-    private boolean isVertexType(Vertex v){
-        return v.getVertexType() == VertexType.SIMPLE_NODE;
     }
 }

@@ -24,6 +24,8 @@ public class Vertex extends GraphNode {
     }
 
     public Vertex setVertexType(VertexType type){
+        this.removeAttribute("ui.class");
+        this.addAttribute("ui.class", type.getSymbol());
         this.vertexType = type;
         return this;
     }

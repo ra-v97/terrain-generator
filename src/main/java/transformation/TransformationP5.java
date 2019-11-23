@@ -129,13 +129,12 @@ public class TransformationP5 implements Transformation {
     }
 
     private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph, InteriorNode interiorNode) {
-        return interiorNode
-                .getAssociatedNodes()
+        List<Vertex> available = graph.getVertexesBetween(v1, v2);
+
+        return available
                 .stream()
-                .filter(hangingVertex -> {
-                    return graph.getEdgeBetweenNodes(hangingVertex, v1).isPresent()
-                            && graph.getEdgeBetweenNodes(hangingVertex, v2).isPresent();
-                }).findAny();
+                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
+                .findAny();
     }
 
     private boolean areAllVertexType(Triplet<Vertex, Vertex, Vertex> triangle) {
