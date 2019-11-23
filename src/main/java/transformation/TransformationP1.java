@@ -46,10 +46,6 @@ public class TransformationP1 implements Transformation {
         GraphEdge shortEdge2 = graph.getEdgeBetweenNodes(oppositeLongestEdgeVertex, simpleVertex2)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
-        if(!longestEdge.getB()){
-            return false;
-        }
-
         if(longestEdge.getL() < shortEdge1.getL() || longestEdge.getL() < shortEdge2.getL()){
             return false;
         }
