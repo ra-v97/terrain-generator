@@ -72,9 +72,9 @@ public class TransformationP3Test extends AbstractTransformationTest {
         GraphEdge v2_h4 = graph.insertEdge("e1", v2, h4, true);
         GraphEdge v1_v3 = graph.insertEdge("e2", v1, v3, true);
         GraphEdge h4_v3 = graph.insertEdge("e3", h4, v3, true);
-        GraphEdge v2_v3 = graph.insertEdge("e4", v2, v3, true);
+        GraphEdge v1_v2 = graph.insertEdge("e4", v1, v2, true);
 
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h4);
         return new Triplet<>(graph, in1, h4);
     }
 
@@ -90,7 +90,7 @@ public class TransformationP3Test extends AbstractTransformationTest {
         GraphEdge h4_v3 = graph.insertEdge("e3", h4, v3, true);
         GraphEdge v1_v2 = graph.insertEdge("e5", v1, v2, true);
 
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h4);
         return new Triplet<>(graph, in1, h4);
     }
 
@@ -106,7 +106,7 @@ public class TransformationP3Test extends AbstractTransformationTest {
         GraphEdge v1_h4 = graph.insertEdge("e3", v1, h4, true);
         GraphEdge h4_v3 = graph.insertEdge("e4", h4, v3, true);
 
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h4);
         return new Triplet<>(graph, in1, h4);
     }
 }

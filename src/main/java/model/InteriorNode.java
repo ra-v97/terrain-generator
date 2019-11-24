@@ -3,10 +3,9 @@ package model;
 import org.graphstream.graph.implementations.AbstractGraph;
 import org.javatuples.Triplet;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class InteriorNode extends GraphNode {
 
@@ -46,7 +45,14 @@ public class InteriorNode extends GraphNode {
     }
 
     public List<Vertex> getAssociatedNodes() {
-        return Collections.unmodifiableList(associatedNodes);
+        ModelGraph graph = (ModelGraph) this.getGraph();
+        List<Vertex> between0and1 = graph.getVertexesBetween(this.triangle.getValue0(), this.triangle.getValue1());
+        List<Vertex> between0and2 = graph.getVertexesBetween(this.triangle.getValue0(), this.triangle.getValue2());
+        List<Vertex> between1and2 = graph.getVertexesBetween(this.triangle.getValue1(), this.triangle.getValue2());
+
+        return Stream.of(between0and1, between0and2, between1and2)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     private static Point3d getInteriorPosition(Vertex v1, Vertex v2, Vertex v3) {

@@ -1,20 +1,22 @@
 package transformation;
 
 import model.*;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TransformationP5 implements Transformation {
 
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriage(interiorNode.getTriangleVertexes(), graph);
-        Triplet<Vertex, Vertex, Vertex> triangle2 = getOrderedTriage2(triangle, graph);
+        Optional<Triplet<Vertex, Vertex, Vertex>> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode);
+        Optional<Triplet<Vertex, Vertex, Vertex>> triangle2 = triangle.map(e -> getOrderedTriage2(e, graph));
 
-        return areAllVertexType(triangle2) &&
-                isTransformationConditionFulfilled(graph, triangle2);
+        return triangle2.isPresent() && areAllVertexType(triangle2.get()) &&
+                isTransformationConditionFulfilled(graph, triangle2.get(), interiorNode);
     }
 
     private Triplet<Vertex, Vertex, Vertex> getOrderedTriage2(Triplet<Vertex, Vertex, Vertex> triangle, ModelGraph graph) {
@@ -27,11 +29,11 @@ public class TransformationP5 implements Transformation {
                 : new Triplet<>(triangle.getValue1(), triangle.getValue0(), triangle.getValue2());
     }
 
-    private boolean isTransformationConditionFulfilled(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle) {
+    private boolean isTransformationConditionFulfilled(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle, InteriorNode interiorNode) {
         Vertex v1 = triangle.getValue0();
         Vertex v2 = triangle.getValue1();
         Vertex v3 = triangle.getValue2();
-        Vertex h4 = getHangingVertexBetween(v1, v2, graph);
+        Vertex h4 = getHangingVertexBetweenOp(v1, v2, graph, interiorNode).get();
 
         GraphEdge L1 = getEdgeBetween(graph, v1, h4);
         GraphEdge L2 = getEdgeBetween(graph, h4, v2);
@@ -55,13 +57,13 @@ public class TransformationP5 implements Transformation {
             return graph;
         }
 
-        Triplet<Vertex, Vertex, Vertex> trianglePre = getOrderedTriage(interiorNode.getTriangleVertexes(), graph);
+        Triplet<Vertex, Vertex, Vertex> trianglePre = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph, interiorNode).get();
         Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriage2(trianglePre, graph);
 
         Vertex v1 = triangle.getValue0();
         Vertex v2 = triangle.getValue1();
         Vertex v3 = triangle.getValue2();
-        Vertex h4 = getHangingVertexBetween(v1, v2, graph);
+        Vertex h4 = getHangingVertexBetweenOp(v1, v2, graph, interiorNode).get();
 
         GraphEdge v1_h4 = getEdgeBetween(graph, v1, h4);
         GraphEdge h4_v2 = getEdgeBetween(graph, h4, v2);
@@ -99,26 +101,40 @@ public class TransformationP5 implements Transformation {
         graph.insertEdge(edgeId, v1, h6, b);
     }
 
-    private Triplet<Vertex, Vertex, Vertex> getOrderedTriage(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph) {
-        if (getHangingVertexBetweenOp(v.getValue0(), v.getValue1(), graph).isPresent()) {
-            return v;
-        } else if (getHangingVertexBetweenOp(v.getValue2(), v.getValue0(), graph).isPresent()) {
-            return new Triplet<>(v.getValue2(), v.getValue0(), v.getValue1());
-        } else if (getHangingVertexBetweenOp(v.getValue1(), v.getValue2(), graph).isPresent()) {
-            return new Triplet<>(v.getValue1(), v.getValue2(), v.getValue0());
+    private Optional<Triplet<Vertex, Vertex, Vertex>> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph, InteriorNode interiorNode){
+        List<Vertex> hanging =
+                interiorNode
+                        .getAssociatedNodes()
+                        .stream()
+                        .filter(e -> e.getVertexType() == VertexType.HANGING_NODE)
+                        .collect(Collectors.toList());
+
+        if (hanging.size() != 1) {
+            return Optional.empty();
         }
-        throw new RuntimeException("Configuration with hanging vertex between 2 vertexes was not found");
+
+        Vertex hangingVertex = hanging.get(0);
+        if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue0()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue1()).isPresent()){
+            return Optional.of(v);
+        } else if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue0()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue2()).isPresent()){
+            return Optional.of(new Triplet<>(v.getValue2(), v.getValue0(), v.getValue1()));
+        } else if(graph.getEdgeBetweenNodes(hangingVertex, v.getValue1()).isPresent()
+                && graph.getEdgeBetweenNodes(hangingVertex, v.getValue2()).isPresent()){
+            return Optional.of(new Triplet<>(v.getValue1(), v.getValue2(), v.getValue0()));
+        }
+
+        return Optional.empty();
     }
 
-    private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph) {
-        List<Vertex> between = graph.getVertexesBetween(v1, v2);
+    private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph, InteriorNode interiorNode) {
+        List<Vertex> available = graph.getVertexesBetween(v1, v2);
 
-        return between.stream().filter(e -> e.getVertexType() == VertexType.HANGING_NODE).findAny();
-    }
-
-    private Vertex getHangingVertexBetween(Vertex v1, Vertex v2, ModelGraph graph) {
-        return getHangingVertexBetweenOp(v1, v2, graph)
-                .orElseThrow(() -> new RuntimeException("Hanging vertex between " + v1.getId() + " and " + v2.getId() + " not found"));
+        return available
+                .stream()
+                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
+                .findAny();
     }
 
     private boolean areAllVertexType(Triplet<Vertex, Vertex, Vertex> triangle) {
