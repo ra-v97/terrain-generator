@@ -1,9 +1,11 @@
 import model.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import transformation.TransformationP9;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Ignore
 public class TransformationP9Test extends AbstractTransformationTest {
     private TransformationP9 transformation = new TransformationP9();
 

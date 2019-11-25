@@ -1,11 +1,12 @@
 import model.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP6;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@Ignore
 public class TransformationP6Test extends AbstractTransformationTest {
 	private Transformation transformation = new TransformationP6();
 

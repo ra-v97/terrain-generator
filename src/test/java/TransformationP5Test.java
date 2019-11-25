@@ -1,11 +1,13 @@
 import model.*;
 import org.javatuples.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP5;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Ignore
 public class TransformationP5Test extends AbstractTransformationTest {
 
     private Transformation transformation = new TransformationP5();
