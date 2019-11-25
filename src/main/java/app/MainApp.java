@@ -5,9 +5,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.javatuples.Pair;
 import processor.MapProcessingUtil;
-import transformation.Transformation;
-import transformation.TransformationP1;
-import transformation.TransformationP2;
+import transformation.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +21,7 @@ public class MainApp {
     private static Logger log = Logger.getLogger(MainApp.class.getName());
 
     private TerrainMap loadData() {
-        File file = new File(this.getClass().getResource("/poland100.data").getPath());
+        File file = new File(this.getClass().getResource("/poland1000.data").getPath());
         byte[] bytes;
         try {
             bytes = Files.readAllBytes(file.toPath());
@@ -38,8 +36,6 @@ public class MainApp {
             for (int j = 0; j < dimension; j++) {
                 map.addPoint(j, i, new Point3d(j, i, buffer.get(i * dimension + j)));
             }
-            if (i % 10 == 0)
-                System.out.println("Row " + i);
         }
         return map;
     }
@@ -61,22 +57,25 @@ public class MainApp {
             e.printStackTrace();
 
         }
-        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1));
-        List<Transformation> transformations = Arrays.asList(new TransformationP1(), new TransformationP2());
-        MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1).forEach(interiorNode ->
-        {
-            for (Transformation p : transformations) {
-                try {
+
+        List<Transformation> transformations = Arrays.asList(new TransformationP1(), new TransformationP2(), new TransformationP3(),
+                new TransformationP4(), new TransformationP5(), new TransformationP6(), new TransformationP7(), new TransformationP8(), new TransformationP9());
+
+        double error = 0.0001;
+        for (List<InteriorNode> trianglesToRefinement = MapProcessingUtil.markTrianglesForRefinement(graph, map, error);
+             trianglesToRefinement.size() > 0;
+             trianglesToRefinement = MapProcessingUtil.markTrianglesForRefinement(graph, map, error)) {
+
+            trianglesToRefinement.forEach(interiorNode ->
+            {
+                for (Transformation p : transformations) {
                     if (p.isConditionCompleted(graph, interiorNode)) {
-                        System.out.println(p.getClass());
+                        log.info("Executing transformation: " + p.getClass().getSimpleName() + " on interior" + interiorNode.getId());
                         p.transformGraph(graph, interiorNode);
                         break;
                     }
-                } catch (Exception e) {
-                    break;
                 }
-            }
-        });
-
+            });
+        }
     }
 }

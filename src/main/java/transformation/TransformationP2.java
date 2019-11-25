@@ -40,13 +40,13 @@ public class TransformationP2 implements Transformation {
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
         GraphEdge edge3 = graph.getEdgeBetweenNodes(v1, v3)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
-        if(edge1.getL() > edge2.getL()) {
+        if (edge1.getL() > edge2.getL()) {
             if (edge1.getL() > edge3.getL()) {
                 return edge1;
             } else {
                 return edge3;
             }
-        } else if(edge2.getL() > edge3.getL()) {
+        } else if (edge2.getL() > edge3.getL()) {
             return edge2;
         } else {
             return edge3;
@@ -81,7 +81,12 @@ public class TransformationP2 implements Transformation {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
         if (!isGraphValidForTransformation(interiorNode, triangle)) return false;
 
-        Map<String, Vertex> model = mapTriangleVertexesToModel(graph, triangle);
+        Map<String, Vertex> model;
+        try {
+            model = mapTriangleVertexesToModel(graph, triangle);
+        } catch (RuntimeException e) {
+            return false;
+        }
         Vertex simpleVertex1 = model.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY);
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
         Vertex simpleVertex3 = model.get(VERTEX_MAP_SIMPLE_VERTEX_3_KEY);

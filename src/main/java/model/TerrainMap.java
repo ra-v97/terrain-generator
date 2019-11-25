@@ -34,10 +34,10 @@ public class TerrainMap {
 
         TriangleSquareBorder triangleSquareBorder = new TriangleSquareBorder(triangle);
 
-        for (startIndexI = 1; points[startIndexI][0].getY() < triangleSquareBorder.getMinY() && startIndexI <= sizeX; startIndexI++){}
+        for (startIndexI = 1; startIndexI < sizeX && points[startIndexI][0].getY() < triangleSquareBorder.getMinY(); startIndexI++){}
         startIndexI--;
 
-        for (startIndexJ = 1; points[0][startIndexJ].getX() < triangleSquareBorder.getMinX() && startIndexJ <= sizeY; startIndexJ++){}
+        for (startIndexJ = 1; startIndexJ < sizeY && points[0][startIndexJ].getX() < triangleSquareBorder.getMinX(); startIndexJ++){}
         startIndexJ--;
 
         for (int i = startIndexI; i < this.sizeX && points[i][0].getY() < triangleSquareBorder.getMaxY(); i++) {

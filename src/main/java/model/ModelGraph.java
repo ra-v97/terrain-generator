@@ -30,7 +30,7 @@ public class ModelGraph extends MultiGraph {
     public Vertex insertVertex(Vertex vertex) {
         Node node = this.addNode(vertex.getId());
         node.addAttribute("ui.class", vertex.getVertexType().getSymbol());
-        node.addAttribute("ui.label", vertex.getId());
+        //node.addAttribute("ui.label", vertex.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, vertex.getXCoordinate(), vertex.getYCoordinate(), vertex.getZCoordinate());
         vertexes.put(vertex.getId(), vertex);
@@ -147,7 +147,7 @@ public class ModelGraph extends MultiGraph {
         return this.getVertexesBetween(beginning, end).stream().findFirst();
     }
 
-    public GraphEdge getTraingleLongestEdge(InteriorNode interiorNode){
+    public GraphEdge getTriangleLongestEdge(InteriorNode interiorNode){
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangle();
         Vertex v1 = triangle.getValue0();
         Vertex v2 = triangle.getValue1();

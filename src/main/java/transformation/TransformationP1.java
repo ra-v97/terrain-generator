@@ -29,7 +29,12 @@ public class TransformationP1 implements Transformation {
             return false;
         }
 
-        Map<String, Vertex> model = mapTriangleVertexesToModel(graph, interiorNode);
+        Map<String, Vertex> model;
+        try{
+             model = mapTriangleVertexesToModel(graph, interiorNode);
+        }catch(RuntimeException e){
+            return false;
+        }
 
         Vertex simpleVertex1 = model.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY);
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
@@ -101,7 +106,7 @@ public class TransformationP1 implements Transformation {
     private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph modelGraph, InteriorNode interiorNode){
         Map<String, Vertex> triangleModel = new HashMap<>();
 
-        GraphEdge triangleLongestEdge = modelGraph.getTraingleLongestEdge(interiorNode);
+        GraphEdge triangleLongestEdge = modelGraph.getTriangleLongestEdge(interiorNode);
         triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_1_KEY, triangleLongestEdge.getNode0());
         triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_2_KEY, triangleLongestEdge.getNode1());
 

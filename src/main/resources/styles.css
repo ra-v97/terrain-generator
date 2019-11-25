@@ -1,6 +1,6 @@
 node {
     fill-color: grey;
-    size: 20px;
+    size: 5px;
     stroke-mode: plain;
     stroke-color: black;
     stroke-width: 1px;
@@ -9,9 +9,10 @@ node {
 
 node.H {
     fill-color: green;
+    size: 5px;
 }
 
 node.important {
     fill-color: red;
-    size: 15px;
+    size: 10px;
 }

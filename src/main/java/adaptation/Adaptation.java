@@ -1,6 +1,5 @@
 package adaptation;
 
-import app.MainApp;
 import model.InteriorNode;
 import model.ModelGraph;
 import org.apache.log4j.Logger;

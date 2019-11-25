@@ -67,7 +67,7 @@ public final class MapProcessingUtil {
                 .mapToDouble(Double::doubleValue)
                 .sum();
         if (sumOfRealPointsSquares == 0.0) {
-            throw new RuntimeException("Divide by zero");
+            sumOfRealPointsSquares = 1.0;
         }
         return sumOfSquaresOfDifferenceBetweenEstimatedAndRealPoints / sumOfRealPointsSquares;
     }
