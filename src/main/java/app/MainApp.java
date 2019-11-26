@@ -4,10 +4,8 @@ import model.*;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.javatuples.Pair;
-import processor.MapProcessingUtil;
 import transformation.Transformation;
 import transformation.TransformationP1;
-import transformation.TransformationP7;
 
 public class MainApp {
 
