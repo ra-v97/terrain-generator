@@ -100,19 +100,19 @@ public class TransformationP4Test extends AbstractTransformationTest {
     public void envelopeGraphNewEdgeProperties() {
         Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
         ModelGraph graph = graphPair.getValue0();
-        InteriorNode iNode = graph.getInterior("i3").orElseThrow(IllegalStateException::new);
+        InteriorNode iNode = graph.getInterior("i5").orElseThrow(IllegalStateException::new);
 
-        Vertex v2 = getVertexIfExists(graph, "v2");
-        Vertex v8 = getVertexIfExists(graph, "v8");
+        Vertex v1 = getVertexIfExists(graph, "v1");
+        Vertex v3 = getVertexIfExists(graph, "v3");
 
-        Double edgeLength = Math.sqrt(Math.pow(v2.getXCoordinate() - v8.getXCoordinate(), 2.0) +
-                Math.pow(v2.getYCoordinate() - v8.getYCoordinate(), 2.0) +
-                Math.pow(v2.getZCoordinate() - v8.getZCoordinate(), 2.0));
+        Double edgeLength = Math.sqrt(Math.pow(v1.getXCoordinate() - v3.getXCoordinate(), 2.0) +
+                            Math.pow(v1.getYCoordinate() - v3.getYCoordinate(), 2.0) +
+                            Math.pow(v1.getZCoordinate() - v3.getZCoordinate(), 2.0));
 
-        assertFalse(graph.getEdgeBetweenNodes(v2, v8).isPresent());
+        assertFalse(graph.getEdgeBetweenNodes(v1, v3).isPresent());
         transformation.transformGraph(graph, iNode);
 
-        Optional<GraphEdge> edge = graph.getEdgeBetweenNodes(v2, v8);
+        Optional<GraphEdge> edge = graph.getEdgeBetweenNodes(v1, v3);
         assertTrue(edge.isPresent());
         assertEquals(edgeLength, edge.get().getL());
     }
@@ -140,48 +140,65 @@ public class TransformationP4Test extends AbstractTransformationTest {
         ModelGraph graph = new ModelGraph("envelopeGraphTest");
 
         // vertices top -> down; in the same level: left -> right
-        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(150., 150., 0.));
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0., 100., 0.));
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(100., 100., 0.));
-        Vertex v2 = graph.insertVertex("v2", VertexType.HANGING_NODE, new Point3d(150., 100., 0.));
-        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(250., 100., 0.));
-        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(100., 50., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(250., 100., 0.));
+
+        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(50., 50., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.HANGING_NODE, new Point3d(100., 50., 0.));
         Vertex v5 = graph.insertVertex("v5", VertexType.HANGING_NODE, new Point3d(150., 50., 0.));
-        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(250., 50., 0.));
-        Vertex v7 = graph.insertVertex("v7", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
-//        Vertex v8 = graph.insertVertex("v8", VertexType.SIMPLE_NODE, new Point3d(200., 0., 0.));
-//        Vertex v9 = graph.insertVertex("v9", VertexType.SIMPLE_NODE, new Point3d(250., 0., 0.));
+        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(225., 50., 0.));
+
+        Vertex v7 = graph.insertVertex("v7", VertexType.SIMPLE_NODE, new Point3d(0., 0., 0.));
+        Vertex v8 = graph.insertVertex("v8", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v9 = graph.insertVertex("v9", VertexType.SIMPLE_NODE, new Point3d(200., 0., 0.));
+        Vertex v10 = graph.insertVertex("v10", VertexType.SIMPLE_NODE, new Point3d(250., 0., 0.));
 
         //edges
         graph.insertEdge("e0", v0, v1);
-        graph.insertEdge("e1", v0, v2);
         graph.insertEdge("e2", v0, v3);
-        graph.insertEdge("e3", v1, v2);
-        graph.insertEdge("e4", v1, v4);
-        graph.insertEdge("e5", v1, v5);
-        graph.insertEdge("e6", v2, v3);
-        graph.insertEdge("e7", v3, v6);
-     //   graph.insertEdge("e8", v3, v9);
-        graph.insertEdge("e9", v4, v5);
-        graph.insertEdge("e10", v4, v7);
-        graph.insertEdge("e11", v5, v7);
-     //   graph.insertEdge("e12", v5, v8);
-     //   graph.insertEdge("e13", v6, v8);
-     //   graph.insertEdge("e14", v6, v9);
-     //   graph.insertEdge("e15", v7, v8);
-     //   graph.insertEdge("e16", v8, v9);
+        graph.insertEdge("e1", v0, v7);
+
+
+
+        graph.insertEdge("e3", v1, v4);
+        graph.insertEdge("e4", v1, v5);
+        graph.insertEdge("e5", v1, v2);
+
+
+        graph.insertEdge("e6", v2, v6);
+        graph.insertEdge("e7", v2, v10);
+
+        graph.insertEdge("e8", v4, v5);
+        graph.insertEdge("e9", v4, v8);
+
+        graph.insertEdge("e10", v5, v8);
+        graph.insertEdge("e11", v5, v9);
+
+        graph.insertEdge("e12", v6, v9);
+        graph.insertEdge("e13", v6, v10);
+
+        graph.insertEdge("e14", v9, v8);
+        graph.insertEdge("e15", v9, v10);
+
+        graph.insertEdge("e16", v3, v7);
+        graph.insertEdge("e17", v3, v8);
+
+        graph.insertEdge("e18", v7, v8);
 
         // i-nodes
-        Map<InteriorNode, Boolean> nodesWithFlag = new HashMap<>();
-        nodesWithFlag.put(graph.insertInterior("i0", v0, v1, v2), false);
-        nodesWithFlag.put(graph.insertInterior("i1", v0, v2, v3), false);
-        nodesWithFlag.put(graph.insertInterior("i2", v1, v4, v5), false);
-    //    nodesWithFlag.put(graph.insertInterior("i3", v1, v3, v8), true);  // <-- correct :D
-    //    nodesWithFlag.put(graph.insertInterior("i4", v3, v6, v9), false);
-        nodesWithFlag.put(graph.insertInterior("i5", v4, v5, v7), false);
-    //    nodesWithFlag.put(graph.insertInterior("i6", v5, v7, v8), false);
-     //   nodesWithFlag.put(graph.insertInterior("i7", v6, v8, v9), false);
+        Map<InteriorNode, Boolean> nodesToFlags = new HashMap<>();
+        nodesToFlags.put(graph.insertInterior("i0", v0, v3, v7), false);
+        nodesToFlags.put(graph.insertInterior("i1", v0, v1, v8), true);
+        nodesToFlags.put(graph.insertInterior("i2", v1, v4, v5), false);
+        nodesToFlags.put(graph.insertInterior("i5", v1, v2, v9), true);
+        nodesToFlags.put(graph.insertInterior("i6", v2, v6, v10), false);
+        nodesToFlags.put(graph.insertInterior("i8", v3, v7, v8), false);
+        nodesToFlags.put(graph.insertInterior("i3", v4, v5, v8), false);
+        nodesToFlags.put(graph.insertInterior("i4", v5, v8, v9), false);
+        nodesToFlags.put(graph.insertInterior("i7", v6, v9, v10), false);
 
-        return Pair.with(graph, nodesWithFlag);
+        return Pair.with(graph, nodesToFlags);
     }
 
     private int getHangingNodeSize(ModelGraph graph) {
