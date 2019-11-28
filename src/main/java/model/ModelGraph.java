@@ -8,7 +8,6 @@ import org.javatuples.Triplet;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ModelGraph extends MultiGraph {
 
@@ -23,7 +22,12 @@ public class ModelGraph extends MultiGraph {
     }
 
     public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
-        return getEdgeById(v1.getEdgeBetween(v2).getId());
+        Edge e = v1.getEdgeBetween(v2);
+
+        if (e == null) {
+            return Optional.empty();
+        }
+        return getEdgeById(e.getId());
     }
 
     public Vertex insertVertex(Vertex vertex) {
