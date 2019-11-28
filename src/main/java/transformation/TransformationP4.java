@@ -73,8 +73,11 @@ public class TransformationP4 implements Transformation {
         Vertex[] v = this.convertToProductionModel(graph, interiorNode).getValue1().toArray(new Vertex[0]);
 
         graph.removeInterior(interiorNode.getId());
-        graph.insertInterior(this.generateId(v[0], v[1], v[4]), v[0], v[1], v[4]);
-        graph.insertInterior(this.generateId(v[1], v[2], v[4]), v[1], v[2], v[4]);
+        InteriorNode v0v1v4 = graph.insertInterior(this.generateId(v[0], v[1], v[4]), v[0], v[1], v[4]);
+        InteriorNode v1v2v4 = graph.insertInterior(this.generateId(v[1], v[2], v[4]), v[1], v[2], v[4]);
+
+        v0v1v4.setPartitionRequired(false);
+        v1v2v4.setPartitionRequired(false);
 
         GraphEdge edge = graph.insertEdge(this.generateId(v[1], v[4]), v[1], v[4]);
         edge.setB(false);
