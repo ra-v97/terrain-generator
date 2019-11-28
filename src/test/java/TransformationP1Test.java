@@ -4,6 +4,7 @@ import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP1;
 
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -156,6 +157,90 @@ public class TransformationP1Test extends AbstractTransformationTest {
         GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
 
         assertEquals(Point3d.distance(newVertex.getCoordinates(), h.getCoordinates()), internalEdge.getL());
+    }
+
+
+    @Test
+    public void transformationProduceNewTerrain() {
+        ModelGraph graph = createEmptyGraph();
+        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, -42.0));
+        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 100.0, -42.0));
+        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(100.0, 0.0, -42.0));
+        Vertex v4 = new Vertex(graph, "v4", VertexType.SIMPLE_NODE, new Point3d(100.0, 100.0, -42.0));
+        Vertex v5 = new Vertex(graph, "v5", VertexType.SIMPLE_NODE, new Point3d(200.0, 0.0, -42.0));
+        Vertex v6 = new Vertex(graph, "v6", VertexType.SIMPLE_NODE, new Point3d(200.0, 100.0, -42.0));
+        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
+        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), false);
+        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
+        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v2, v4), false);
+        GraphEdge e5 = new GraphEdge("e5", "E", new Pair<>(v4, v3), false);
+        GraphEdge e6 = new GraphEdge("e6", "E", new Pair<>(v3, v6), false);
+        GraphEdge e7 = new GraphEdge("e7", "E", new Pair<>(v4, v6), false);
+        GraphEdge e8 = new GraphEdge("e8", "E", new Pair<>(v3, v5), true);
+        GraphEdge e9 = new GraphEdge("e9", "E", new Pair<>(v5, v6), false);
+
+        populateTransformationGraph(graph, v1, v2, v3, e1, e2, e3, true, "i1");
+        populateTransformationGraph(graph, v2, v3, v4, e2, e4, e5, true, "i2");
+        populateTransformationGraph(graph, v3, v4, v6, e5, e6, e7, true, "i3");
+        populateTransformationGraph(graph, v3, v5, v6, e6, e8, e9, true, "i4");
+
+
+        InteriorNode interior1 = graph.getInterior("i1").orElseThrow(AssertionError::new);
+        assertTrue(transformation.isConditionCompleted(graph, interior1));
+        if (transformation.isConditionCompleted(graph, interior1))
+            transformation.transformGraph(graph, interior1);
+        InteriorNode interior2 = graph.getInterior("i2").orElseThrow(AssertionError::new);
+        assertFalse(transformation.isConditionCompleted(graph, interior2));
+        if (transformation.isConditionCompleted(graph, interior2))
+            transformation.transformGraph(graph, interior2);
+        InteriorNode interior3 = graph.getInterior("i3").orElseThrow(AssertionError::new);
+        assertTrue(transformation.isConditionCompleted(graph, interior3));
+        if (transformation.isConditionCompleted(graph, interior3))
+            transformation.transformGraph(graph, interior3);
+        InteriorNode interior4 = graph.getInterior("i4").orElseThrow(AssertionError::new);
+        assertFalse(transformation.isConditionCompleted(graph, interior4));
+        if (transformation.isConditionCompleted(graph, interior4))
+            transformation.transformGraph(graph, interior4);
+
+        assertEquals(graph.getVertices().size(), 8);
+        assertEquals(graph.getInteriors().size(), 6);
+        assertEquals(graph.getEdges().size(), 6 * 3 + 7 + 4 + 2);//interiors + original+ divide + new one
+
+        assertEquals(graph.getVertexBetween(v2, v3).get().getCoordinates(),
+                Point3d.middlePoint(new Point3d(0.0, 100.0, -42.0), new Point3d(100.0, 0.0, -42.0)));
+        assertEquals(graph.getVertexBetween(v3, v6).get().getCoordinates(),
+                Point3d.middlePoint(new Point3d(100.0, 0.0, -42.0), new Point3d(200.0, 100.0, -42.0)));
+        assertEquals(graph.getEdgeBetweenNodes(graph.getVertexBetween(v3, v6).get(), v3).get().getL(),
+                100 * Math.sqrt(2.0) / 2, 0.001);
+        assertEquals(graph.getEdgeBetweenNodes(graph.getVertexBetween(v3, v6).get(), v6).get().getL(),
+                100 * Math.sqrt(2.0) / 2, 0.001);
+
+        assertEquals(graph.getEdgeBetweenNodes(graph.getVertexBetween(v2, v3).get(), v1).get().getL(),
+                100 * Math.sqrt(2.0) / 2, 0.001);
+
+        assertEquals(graph.getInteriors().stream().map(InteriorNode::isPartitionRequired).filter(x -> x).count(), 2L);
+
+        assertEquals(graph.getEdges().stream().map(GraphEdge::getB).filter(x -> x).count(), 2L);
+
+
+    }
+
+    public ModelGraph populateTransformationGraph(ModelGraph graph, Vertex ve1, Vertex ve2, Vertex ve3, GraphEdge ge1,
+                                                  GraphEdge ge2, GraphEdge ge3, boolean partitionRequired, String name) {
+
+        Vertex v1 = graph.getVertex(ve1.getId()).orElseGet(() -> graph.insertVertex(ve1));
+        Vertex v2 = graph.getVertex(ve2.getId()).orElseGet(() -> graph.insertVertex(ve2));
+        Vertex v3 = graph.getVertex(ve3.getId()).orElseGet(() -> graph.insertVertex(ve3));
+        if (graph.getEdge(ge1.getId()) == null)
+            graph.insertEdge(ge1);
+        if (graph.getEdge(ge2.getId()) == null)
+            graph.insertEdge(ge2);
+        if (graph.getEdge(ge3.getId()) == null)
+            graph.insertEdge(ge3);
+        InteriorNode in1 = graph.insertInterior(name, v1, v2, v3);
+        in1.setPartitionRequired(partitionRequired);
+
+        return graph;
     }
 
 

@@ -25,7 +25,7 @@ public class TransformationP1 implements Transformation {
         if (!interiorNode.isPartitionRequired()) {
             return false;
         }
-        if (getSimpleVertexCount(triangle) != 3 || interiorNode.getAssociatedNodes().size() != 0) {
+        if (getSimpleVertexCount(triangle) != 3 || !checkIfTriangle(triangle)) {
             return false;
         }
 
@@ -47,6 +47,13 @@ public class TransformationP1 implements Transformation {
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
         return (longestEdge.getL() >= shortEdge1.getL() && longestEdge.getL() >= shortEdge2.getL());
+    }
+
+    private boolean checkIfTriangle(Triplet<Vertex, Vertex, Vertex> triangle) {
+        Vertex value0 = triangle.getValue0();
+        Vertex value1 = triangle.getValue1();
+        Vertex value2 = triangle.getValue2();
+        return value0.hasEdgeBetween(value1) && value1.hasEdgeBetween(value2) && value2.hasEdgeBetween(value0);
     }
 
     @Override
