@@ -1,13 +1,15 @@
 import model.*;
 import org.junit.Test;
 import transformation.Transformation;
-import transformation.TransformationP2;
+import transformation.TransformationP3;
+import transformation.TransformationP3old;
 
 import java.util.concurrent.TimeUnit;
 
 public class TransformationP3Test extends AbstractTransformationTest {
     // TransformationP2 seems to work as TransformationP3 form http://home.agh.edu.pl/~paszynsk/GG/ProjektGG2019.pdf
-    private Transformation transformation = new TransformationP2();
+    // Renamed to TransformationP3
+    private Transformation transformation = new TransformationP3();
 
     @Test
     public void transformationProduceNewTerrain() throws Exception{
@@ -27,6 +29,11 @@ public class TransformationP3Test extends AbstractTransformationTest {
         // interior nodes (should be for each triangle)
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v7);
         InteriorNode in2 = graph.insertInterior("i2", v2, v3, v8);
+        InteriorNode in3 = graph.insertInterior("i3", v1, v7, v6);
+        InteriorNode in4 = graph.insertInterior("i4", v2, v5, v4);
+        InteriorNode in5 = graph.insertInterior("i5", v4, v5, v7);
+        InteriorNode in6 = graph.insertInterior("i6", v5, v8, v7);
+
 
         // EDGES:
         // from v1
@@ -57,14 +64,14 @@ public class TransformationP3Test extends AbstractTransformationTest {
 
         // show before transformation
         graph.display();
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(10);
 
         transformation.transformGraph(graph, in1);
         transformation.transformGraph(graph, in2);
 
         // show after transformation
         graph.display();
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(10);
     }
 
 }
