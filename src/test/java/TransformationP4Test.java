@@ -66,17 +66,6 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Test
-    public void envelopeGraphConditionCompletion() {
-        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
-
-        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
-            System.out.println("Testing for interior node with id: " + entry.getKey().getId());
-            System.out.println(entry.getValue());
-            System.out.println(transformation.isConditionCompleted(graphPair.getValue0(), entry.getKey()));
-            assertEquals(entry.getValue(), transformation.isConditionCompleted(graphPair.getValue0(), entry.getKey()));
-        }
-    }
 
     @Test
     public void envelopeGraphHangingNodesCount() {
@@ -92,8 +81,8 @@ public class TransformationP4Test extends AbstractTransformationTest {
                     transformation.transformGraph(graph, iNode);
                 }catch (Exception e){}
             }
+            assertEquals(4, getHangingNodeSize(graph));
         }
-        assertEquals(2, getHangingNodeSize(graph));
     }
 
     @Test
@@ -111,7 +100,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
                 }catch (Exception e){}
             }
         }
-        assertEquals(12, graph.getInteriors().size());
+        assertEquals(11, graph.getInteriors().size());
     }
 
     @Test
@@ -131,7 +120,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
                 }
             }
         }
-        assertEquals(57, graph.getEdges().size());
+        assertEquals(54, graph.getEdges().size());
     }
 
     @Test

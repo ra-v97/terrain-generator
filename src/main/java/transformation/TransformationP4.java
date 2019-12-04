@@ -80,29 +80,43 @@ public class TransformationP4 implements Transformation {
 
         if(numberOfVertexesBetween(graph, v0p, v2p) == 1 && numberOfVertexesBetween(graph, v0p, v4p) == 1) {
             v2 = v0p;
+            if(edgeLengthBetween(v2, v2p) < edgeLengthBetween(v2, v4p)){
+                v4 = v2p;
+                v0 = v4p;
+            }
+            else{
+                v4 = v4p;
+                v0 = v2p;
+            }
+
 
         }
         else if(numberOfVertexesBetween(graph, v2p, v0p) == 1 && numberOfVertexesBetween(graph, v2p, v4p) == 1) {
             v2 = v2p;
+            if(edgeLengthBetween(v2, v4p) < edgeLengthBetween(v2, v0p)){
+                v4 = v0p;
+                v0 = v4p;
+            }
+            else{
+                v4 = v4p;
+                v0 = v0p;
+            }
         }
-
-
 
         else if(numberOfVertexesBetween(graph, v4p, v0p) == 1 && numberOfVertexesBetween(graph, v4p, v2p) == 1) {
             v2 = v4p;
+            if(edgeLengthBetween(v2, v0p) < edgeLengthBetween(v2, v2p)){
+                v4 = v0p;
+                v0 = v2p;
+            }
+            else{
+                v4 = v2p;
+                v0 = v0p;
+            }
 
         }
-
         else throw new InvalidProduction();
 
-        if(edgeLengthBetween(v2, v4p) < edgeLengthBetween(v2, v0p)){
-            v4 = v0p;
-            v0 = v4p;
-        }
-        else{
-            v4 = v4p;
-            v0 = v0p;
-        }
 
         v1 = this.getMiddleVertex(graph, v0, v2);
         v3 = this.getMiddleVertex(graph, v2, v4);
