@@ -64,7 +64,6 @@ public class TransformationP4Test extends AbstractTransformationTest {
         InteriorNode interiorNode = graph.insertInterior("i1", v0, v2, v4);
         return Pair.with(graph, interiorNode);
     }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     @Test
@@ -79,11 +78,15 @@ public class TransformationP4Test extends AbstractTransformationTest {
             if (transformation.isConditionCompleted(graph, iNode)) {
                 try {
                     transformation.transformGraph(graph, iNode);
+
                 }catch (Exception e){}
             }
-            assertEquals(4, getHangingNodeSize(graph));
         }
+        assertEquals(3, getHangingNodeSize(graph));
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     @Test
     public void envelopeGraphInternalNodesCount() {
@@ -136,7 +139,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
                 Math.pow(v1.getYCoordinate() - v3.getYCoordinate(), 2.0) +
                 Math.pow(v1.getZCoordinate() - v3.getZCoordinate(), 2.0));
 
-        //assertFalse(graph.getEdgeBetweenNodes(v1, v3).isPresent());
+        assertFalse(graph.getEdgeBetweenNodes(v1, v3).isPresent());
         try {
             transformation.transformGraph(graph, iNode);
         }catch (Exception e){}

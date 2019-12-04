@@ -94,12 +94,12 @@ public class TransformationP4 implements Transformation {
         else if(numberOfVertexesBetween(graph, v2p, v0p) == 1 && numberOfVertexesBetween(graph, v2p, v4p) == 1) {
             v2 = v2p;
             if(edgeLengthBetween(v2, v4p) < edgeLengthBetween(v2, v0p)){
-                v4 = v0p;
-                v0 = v4p;
-            }
-            else{
                 v4 = v4p;
                 v0 = v0p;
+            }
+            else{
+                v4 = v0p;
+                v0 = v4p;
             }
         }
 
