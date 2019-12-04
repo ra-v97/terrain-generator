@@ -23,14 +23,89 @@ public class TransformationP4 implements Transformation {
         return true;
     }
 
+//    private Pair<List<GraphEdge>, List<Vertex>>
+//    convertToProductionModel(ModelGraph graph, InteriorNode interiorNode) throws InvalidProduction {
+//        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangle();
+//        Vertex v0 = triangle.getValue0();
+//        Vertex v2 = triangle.getValue1();
+//        Vertex v4 = triangle.getValue2();
+//        Vertex v1 = this.getMiddleVertex(graph, v0, v2);
+//        Vertex v3 = this.getMiddleVertex(graph, v2, v4);
+//
+//        LinkedList<Vertex> vertices = new LinkedList<>();
+//        vertices.add(v0);
+//        vertices.add(v1);
+//        vertices.add(v2);
+//        vertices.add(v3);
+//        vertices.add(v4);
+//
+//        GraphEdge e0 = getEdgeBetween(graph, v0, v1);
+//        GraphEdge e1 = getEdgeBetween(graph, v1, v2);
+//        GraphEdge e2 = getEdgeBetween(graph, v2, v3);
+//        GraphEdge e3 = getEdgeBetween(graph, v3, v4);
+//        GraphEdge e4 = getEdgeBetween(graph, v4, v0);
+//
+//
+//        LinkedList<GraphEdge> edges = new LinkedList<>();
+//        edges.add(e0);
+//        edges.add(e1);
+//        edges.add(e2);
+//        edges.add(e3);
+//        edges.add(e4);
+//
+//        return Pair.with(edges, vertices);
+//    }
+
+    private long numberOfVertexesBetween(ModelGraph graph, Vertex begin, Vertex end) {
+        return graph.getVertexesBetween(begin, end).stream().filter(x -> x.getVertexType()
+                .equals(VertexType.HANGING_NODE)).count();
+    }
+
+    private double edgeLengthBetween(Vertex v1, Vertex v2) {
+        return Math.sqrt(Math.pow(v1.getXCoordinate() - v2.getXCoordinate(), 2.0) +
+                Math.pow(v1.getYCoordinate() - v2.getYCoordinate(), 2.0) +
+                Math.pow(v1.getZCoordinate() - v2.getZCoordinate(), 2.0));
+    }
+
     private Pair<List<GraphEdge>, List<Vertex>>
     convertToProductionModel(ModelGraph graph, InteriorNode interiorNode) throws InvalidProduction {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangle();
-        Vertex v0 = triangle.getValue0();
-        Vertex v2 = triangle.getValue1();
-        Vertex v4 = triangle.getValue2();
-        Vertex v1 = this.getMiddleVertex(graph, v0, v2);
-        Vertex v3 = this.getMiddleVertex(graph, v2, v4);
+        Vertex v0p = triangle.getValue0();
+        Vertex v2p = triangle.getValue1();
+        Vertex v4p = triangle.getValue2();
+//        Vertex v1p = this.getMiddleVertex(graph, v0p, v2p);
+//        Vertex v3p = this.getMiddleVertex(graph, v2p, v4p);
+
+        Vertex v0 = null, v1= null, v2= null, v3= null, v4= null, v5= null;
+
+        if(numberOfVertexesBetween(graph, v0p, v2p) == 1 && numberOfVertexesBetween(graph, v0p, v4p) == 1) {
+            v2 = v0p;
+
+        }
+        else if(numberOfVertexesBetween(graph, v2p, v0p) == 1 && numberOfVertexesBetween(graph, v2p, v4p) == 1) {
+            v2 = v2p;
+        }
+
+
+
+        else if(numberOfVertexesBetween(graph, v4p, v0p) == 1 && numberOfVertexesBetween(graph, v4p, v2p) == 1) {
+            v2 = v4p;
+
+        }
+
+        else throw new InvalidProduction();
+
+        if(edgeLengthBetween(v2, v4p) < edgeLengthBetween(v2, v0p)){
+            v4 = v0p;
+            v0 = v4p;
+        }
+        else{
+            v4 = v4p;
+            v0 = v0p;
+        }
+
+        v1 = this.getMiddleVertex(graph, v0, v2);
+        v3 = this.getMiddleVertex(graph, v2, v4);
 
         LinkedList<Vertex> vertices = new LinkedList<>();
         vertices.add(v0);
