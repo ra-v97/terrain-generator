@@ -65,7 +65,6 @@ public class TransformationP4Test extends AbstractTransformationTest {
         return Pair.with(graph, interiorNode);
     }
 
-
     @Test
     public void envelopeGraphHangingNodesCount() {
         Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
@@ -78,11 +77,13 @@ public class TransformationP4Test extends AbstractTransformationTest {
             if (transformation.isConditionCompleted(graph, iNode)) {
                 try {
                     transformation.transformGraph(graph, iNode);
-
-                }catch (Exception e){}
+                }catch (Exception e){
+                    // nothing
+                }
             }
         }
-        assertEquals(3, getHangingNodeSize(graph));
+
+        assertEquals(2, getHangingNodeSize(graph));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
