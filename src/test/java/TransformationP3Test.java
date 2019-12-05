@@ -1,8 +1,8 @@
 import model.*;
+import org.graphstream.graph.Node;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP3;
-import transformation.TransformationP3old;
 
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +34,8 @@ public class TransformationP3Test extends AbstractTransformationTest {
         InteriorNode in5 = graph.insertInterior("i5", v4, v5, v7);
         InteriorNode in6 = graph.insertInterior("i6", v5, v8, v7);
 
+        // mark partition required for each node
+        graph.getInteriors().forEach(interiorNode -> interiorNode.setPartitionRequired(true));
 
         // EDGES:
         // from v1
@@ -44,8 +46,8 @@ public class TransformationP3Test extends AbstractTransformationTest {
         graph.insertEdge("e4", v2, v3, true);
         graph.insertEdge("e5", v2, v5, true);
         graph.insertEdge("e6", v2, v4, true);
-        graph.insertEdge("e6_1", v2, v7, true);
-        graph.insertEdge("e6_2", v2, v8, true);
+        graph.insertEdge("e6_1", v2, v7, true); // FIXME - this edge should not be added. It is only to prevent null pointer exception when calling getEdgeBetweenNodes for v2 and v7
+        graph.insertEdge("e6_2", v2, v8, true); // FIXME - this edge should not be added. It is only to prevent null pointer exception when calling getEdgeBetweenNodes for v2 and v8
         // from v3
         graph.insertEdge("e7", v3, v8, true);
         // from v4
@@ -61,17 +63,33 @@ public class TransformationP3Test extends AbstractTransformationTest {
         // edges between hanging nodes
         graph.insertEdge("e14", v2, h1, true);
         graph.insertEdge("e15", h1, v7, true);
+        graph.insertEdge("e16", h2, v2, true);
+        graph.insertEdge("e17", h2, v8, true);
+
+
+        // add node labels for better visualization
+        for (Node node : graph) {
+            node.addAttribute("ui.label", node.getId());
+        }
 
         // show before transformation
         graph.display();
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(5);
 
+        // FIXME - transformations that do not change the graph are executed first due to the error in getEdgeBetweenNodes
+        //  method which throws nullPointer if edge contains hanging node. This error should be resolved by other team.
+        // transformations that do not change the graph
+        transformation.transformGraph(graph, in3);
+        transformation.transformGraph(graph, in4);
+        transformation.transformGraph(graph, in5);
+        transformation.transformGraph(graph, in6);
+        // transformations that change the graph
         transformation.transformGraph(graph, in1);
         transformation.transformGraph(graph, in2);
 
         // show after transformation
         graph.display();
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(5);
     }
 
 }
