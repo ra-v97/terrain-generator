@@ -75,11 +75,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
             InteriorNode iNode = entry.getKey();
 
             if (transformation.isConditionCompleted(graph, iNode)) {
-                try {
-                    transformation.transformGraph(graph, iNode);
-                }catch (Exception e){
-                    // nothing
-                }
+                transformation.transformGraph(graph, iNode);
             }
         }
 
@@ -87,6 +83,16 @@ public class TransformationP4Test extends AbstractTransformationTest {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    @Test
+    public void envelopeGraphConditionCompletion() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            assertEquals(entry.getValue(), transformation.isConditionCompleted(graphPair.getValue0(), entry.getKey()));
+        }
+    }
 
 
     @Test
@@ -99,9 +105,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
             InteriorNode iNode = entry.getKey();
 
             if (transformation.isConditionCompleted(graph, iNode)) {
-                try {
-                    transformation.transformGraph(graph, iNode);
-                }catch (Exception e){}
+                transformation.transformGraph(graph, iNode);
             }
         }
         assertEquals(11, graph.getInteriors().size());
@@ -117,11 +121,8 @@ public class TransformationP4Test extends AbstractTransformationTest {
             InteriorNode iNode = entry.getKey();
 
             if (transformation.isConditionCompleted(graph, iNode)) {
-                try {
-                    transformation.transformGraph(graph, iNode);
-                }catch (Exception e){
 
-                }
+                transformation.transformGraph(graph, iNode);
             }
         }
         assertEquals(54, graph.getEdges().size());
@@ -141,9 +142,8 @@ public class TransformationP4Test extends AbstractTransformationTest {
                 Math.pow(v1.getZCoordinate() - v3.getZCoordinate(), 2.0));
 
         assertFalse(graph.getEdgeBetweenNodes(v1, v3).isPresent());
-        try {
-            transformation.transformGraph(graph, iNode);
-        }catch (Exception e){}
+        transformation.transformGraph(graph, iNode);
+
         Optional<GraphEdge> edge = graph.getEdgeBetweenNodes(v1, v3);
         assertFalse(edge.isPresent());
     }
@@ -171,7 +171,6 @@ public class TransformationP4Test extends AbstractTransformationTest {
         graph.insertEdge("e0", v0, v1);
         graph.insertEdge("e2", v0, v3);
         graph.insertEdge("e1", v0, v7);
-
 
 
         graph.insertEdge("e3", v1, v4);
