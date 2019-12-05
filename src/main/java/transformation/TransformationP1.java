@@ -8,8 +8,8 @@ import model.Vertex;
 import model.VertexType;
 import org.javatuples.Triplet;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TransformationP1 implements Transformation {
 
@@ -22,7 +22,7 @@ public class TransformationP1 implements Transformation {
         boolean conditionMet = true;
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
         if(!interiorNode.isPartitionRequired()) conditionMet = false;
-        if(getHangingVertexCount(triangle) != 0) conditionMet = false;
+        if(hangingVertexExists(graph, triangle)) conditionMet = false;
 
         return conditionMet;
     }
@@ -57,31 +57,71 @@ public class TransformationP1 implements Transformation {
     private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph modelGraph, InteriorNode interiorNode){
         Map<String, Vertex> triangleModel = new HashMap<>();
 
-        GraphEdge triangleLongestEdge = modelGraph.getTraingleLongestEdge(interiorNode);
-        triangleModel.put(longestEdgeVertex1, triangleLongestEdge.getNode0());
-        triangleModel.put(longestEdgeVertex2, triangleLongestEdge.getNode1());
-
         Triplet<Vertex, Vertex, Vertex> triangleVertexes = interiorNode.getTriangleVertexes();
 
-        for (Object o : triangleVertexes){
-            Vertex v = (Vertex)o;
-            if (v != triangleLongestEdge.getNode0() && v != triangleLongestEdge.getNode1()) {
-                triangleModel.put(oppositeVertex, v);
-                break;
-            }
+        Vertex v1 = triangleVertexes.getValue0();
+        Vertex v2 = triangleVertexes.getValue1();
+        Vertex v3 = triangleVertexes.getValue2();
+
+        GraphEdge edge1;
+        try {
+            edge1 = modelGraph.getEdgeById(v1.getId() + v2.getId()).orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        }catch (RuntimeException e){
+            edge1 = modelGraph.getEdgeById(v2.getId() + v1.getId()).orElseThrow(() -> new RuntimeException("Unknown edge id"));
         }
+
+        GraphEdge edge2;
+        try {
+            edge2 = modelGraph.getEdgeBetweenNodes(v2, v3).orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        }catch (RuntimeException e){
+            edge2 = modelGraph.getEdgeBetweenNodes(v3, v2).orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        }
+
+        GraphEdge edge3;
+        try {
+            edge3 = modelGraph.getEdgeBetweenNodes(v1, v3).orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        }catch (RuntimeException e){
+            edge3 = modelGraph.getEdgeBetweenNodes(v3, v1).orElseThrow(() -> new RuntimeException("Unknown edge id"));
+        }
+
+        if (edge1.getL() >= edge2.getL() && edge1.getL() >= edge3.getL()){
+            triangleModel.put(longestEdgeVertex1, v1);
+            triangleModel.put(longestEdgeVertex2, v2);
+            triangleModel.put(oppositeVertex, v3);
+        } else if (edge2.getL() >= edge1.getL() && edge2.getL() >= edge3.getL()) {
+            triangleModel.put(longestEdgeVertex1, v2);
+            triangleModel.put(longestEdgeVertex2, v3);
+            triangleModel.put(oppositeVertex, v1);
+        } else if (edge3.getL() >= edge1.getL() && edge3.getL() >= edge2.getL()) {
+            triangleModel.put(longestEdgeVertex1, v1);
+            triangleModel.put(longestEdgeVertex2, v3);
+            triangleModel.put(oppositeVertex, v2);
+        }
+
         return triangleModel;
     }
 
-    private static int getHangingVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
-        int count = 0;
+    private static boolean hangingVertexExists(ModelGraph modelGraph, Triplet<Vertex, Vertex, Vertex> triangle) {
+        AtomicBoolean hangingVertexExist = new AtomicBoolean(false);
         for (Object o : triangle) {
             Vertex v = (Vertex)o;
             if(v.getVertexType() == VertexType.HANGING_NODE){
-                count++;
+                hangingVertexExist.set(true);
+                break;
             }
         }
-        return count;
+
+        List<Vertex> vertexes = Arrays.asList(triangle.getValue0(), triangle.getValue1(), triangle.getValue2());
+        for (List<Vertex> pair: Arrays.asList(Arrays.asList(vertexes.get(0), vertexes.get(1)),
+                Arrays.asList(vertexes.get(0), vertexes.get(2)),
+                Arrays.asList(vertexes.get(1), vertexes.get(2)))) {
+                modelGraph.getEdgeById(pair.get(0).getId() + pair.get(1).getId()).
+                        ifPresentOrElse((e) -> {},
+                                () -> modelGraph.getEdgeById(pair.get(1).getId() + pair.get(0).getId())
+                                        .ifPresentOrElse((e) -> {},
+                                                () -> hangingVertexExist.set(true)));
+        }
+        return hangingVertexExist.get();
     }
 
     private static void insertEdge(ModelGraph graph, Vertex v1, Vertex v2, boolean boundary){

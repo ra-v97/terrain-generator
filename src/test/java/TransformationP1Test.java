@@ -4,6 +4,8 @@ import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP1;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -82,6 +84,33 @@ public class TransformationP1Test extends AbstractTransformationTest {
         return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
     }
 
+    @Test
+    public void onePassThroughGraph(){
+        ModelGraph graph = ultimateTestGenerator();
+
+        graph.display();
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Collection<InteriorNode> interiorNodes = new ArrayList<>(graph.getInteriors());
+        for (InteriorNode i : interiorNodes) {
+            if (!new HashSet<>(graph.getInteriors()).contains(i)) break;
+            if (transformation.isConditionCompleted(graph, i)) {
+                graph = transformation.transformGraph(graph, i);
+            }
+        }
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ModelGraph ultimateTestGenerator() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
@@ -101,10 +130,10 @@ public class TransformationP1Test extends AbstractTransformationTest {
         GraphEdge v4v5 = graph.insertEdge("v4v5", v4, v5, true);
         GraphEdge v5v6 = graph.insertEdge("v5v6", v5, v6, true);
 
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v4);
-        InteriorNode in2 = graph.insertInterior("i2", v2, v3, v6);
-        InteriorNode in3 = graph.insertInterior("i3", v2, v4, v5);
-        InteriorNode in4 = graph.insertInterior("i4", v2, v5, v6);
+        InteriorNode in1 = graph.insertInterior("v1v2v4", v1, v2, v4);
+        InteriorNode in2 = graph.insertInterior("v2v3v6", v2, v3, v6);
+        InteriorNode in3 = graph.insertInterior("v2v4v5", v2, v4, v5);
+        InteriorNode in4 = graph.insertInterior("v2v5v6", v2, v5, v6);
 
         in1.setPartitionRequired(true);
         in2.setPartitionRequired(true);
