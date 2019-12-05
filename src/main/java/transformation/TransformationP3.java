@@ -4,6 +4,7 @@ import model.*;
 import org.javatuples.Triplet;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TransformationP3 implements Transformation {
@@ -79,6 +80,7 @@ public class TransformationP3 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        if (!hasHangingVertex(interiorNode, graph)) return false;
         if (!isGraphValidForTransformation(interiorNode, triangle)) return false;
 
         Map<String, Vertex> model = mapTriangleVertexesToModel(graph, triangle);
@@ -108,12 +110,27 @@ public class TransformationP3 implements Transformation {
     }
 
     private boolean isConditionFulfilled(GraphEdge edge1, GraphEdge edge2, GraphEdge edge3) {
-        return !edge1.getB() && isEdgeLengthConditionFulfilled(edge1, edge2, edge3)
+        return isEdgeLengthConditionFulfilled(edge1, edge2, edge3)
                 && !((edge2.getB() && edge1.getL() == edge2.getL()) || (edge3.getB() && edge3.getL() == edge1.getL()));
+//        Original condition: TODO what is B parameter in edge?
+//        return !edge1.getB() && isEdgeLengthConditionFulfilled(edge1, edge2, edge3)
+//                && !((edge2.getB() && edge1.getL() == edge2.getL()) || (edge3.getB() && edge3.getL() == edge1.getL()));
     }
 
     private boolean isEdgeLengthConditionFulfilled(GraphEdge edge1, GraphEdge edge2, GraphEdge edge3) {
         return (edge1.getL() >= edge2.getL()) && (edge1.getL() >= edge3.getL());
+    }
+
+    private static boolean hasHangingVertex(InteriorNode interiorNode, ModelGraph graph){
+        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        return hasHangingVertexBetween(graph, triangle.getValue0(),triangle.getValue1()) ||
+                hasHangingVertexBetween(graph, triangle.getValue1(),triangle.getValue2()) ||
+                hasHangingVertexBetween(graph, triangle.getValue2(),triangle.getValue0());
+    }
+
+    private static boolean hasHangingVertexBetween(ModelGraph graph, Vertex v1, Vertex v2) {
+        List<Vertex> vertexesBetween = graph.getVertexesBetween(v1, v2);// v1, v2
+        return vertexesBetween.stream().anyMatch(v -> v.getVertexType() == VertexType.HANGING_NODE);
     }
 
     @Override
