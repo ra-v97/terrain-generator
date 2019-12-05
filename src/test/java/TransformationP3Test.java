@@ -4,7 +4,11 @@ import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP3;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 
 public class TransformationP3Test extends AbstractTransformationTest {
     // TransformationP2 seems to work as TransformationP3 form http://home.agh.edu.pl/~paszynsk/GG/ProjektGG2019.pdf
@@ -12,7 +16,18 @@ public class TransformationP3Test extends AbstractTransformationTest {
     private Transformation transformation = new TransformationP3();
 
     @Test
-    public void transformationProduceNewTerrain() throws Exception{
+    public void testComplexGraphTransformation() throws Exception {
+        // this test uses terrain form point 3b introduced in http://home.agh.edu.pl/~paszynsk/GG/ProjektGG2019.pdf
+        ModelGraph transformedGraph = getComplexGraphAfterTransformation(true);
+        List<Vertex> hangingNodes = transformedGraph.getVertices().stream()
+                .filter(v -> v.getVertexType() == VertexType.HANGING_NODE)
+                .collect(Collectors.toList());
+
+        assertEquals(4, hangingNodes.size());
+        assertEquals(8, transformedGraph.getInteriors().size());
+    }
+
+    private ModelGraph getComplexGraphAfterTransformation(boolean showGraph) throws InterruptedException {
         ModelGraph graph = createEmptyGraph();
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0, 100, 0));
         Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(100, 100, 0));
@@ -67,17 +82,13 @@ public class TransformationP3Test extends AbstractTransformationTest {
         graph.insertEdge("e17", h2, v8, true);
 
 
-        // add node labels for better visualization
-        for (Node node : graph) {
-            node.addAttribute("ui.label", node.getId());
-        }
 
         // show before transformation
-        graph.display();
-        TimeUnit.SECONDS.sleep(5);
+        if (showGraph) showGraph(graph);
 
         // FIXME - transformations that do not change the graph are executed first due to the error in getEdgeBetweenNodes
         //  method which throws nullPointer if edge contains hanging node. This error should be resolved by other team.
+        //  After fixing this error refactor the code and replace with graph.getInteriors().forEach ..
         // transformations that do not change the graph
         transformation.transformGraph(graph, in3);
         transformation.transformGraph(graph, in4);
@@ -88,6 +99,14 @@ public class TransformationP3Test extends AbstractTransformationTest {
         transformation.transformGraph(graph, in2);
 
         // show after transformation
+        if (showGraph) showGraph(graph);
+
+        return graph;
+    }
+
+    private void showGraph(ModelGraph graph) throws InterruptedException {
+        // add node labels for better visualization
+        for (Node node : graph) node.addAttribute("ui.label", node.getId());
         graph.display();
         TimeUnit.SECONDS.sleep(5);
     }
