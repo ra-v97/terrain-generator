@@ -135,6 +135,8 @@ public class TransformationP3 implements Transformation {
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
+        if (!isConditionCompleted(graph, interiorNode)) return graph;
+
         Map<String, Vertex> model = mapTriangleVertexesToModel(graph, interiorNode.getTriangleVertexes());
 
         Vertex simpleVertex1 = model.get(VERTEX_MAP_SIMPLE_VERTEX_1_KEY);
