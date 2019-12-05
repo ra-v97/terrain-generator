@@ -14,6 +14,7 @@ public class TransformationP2 implements Transformation {
 
     private static final String VERTEX_MAP_SIMPLE_VERTEX_2_KEY = "simpleVertex2";
 
+
     private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle) {
         Map<String, Vertex> triangleModel = new HashMap<>();
         GraphEdge edge = getLongestEdge(graph, triangle);
@@ -34,6 +35,7 @@ public class TransformationP2 implements Transformation {
         Vertex v1 = triangle.getValue0();
         Vertex v2 = triangle.getValue1();
         Vertex v3 = triangle.getValue2();
+        Vertex v4 = null;
         GraphEdge edge1 = graph.getEdgeBetweenNodes(v1, v2)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
         GraphEdge edge2 = graph.getEdgeBetweenNodes(v2, v3)

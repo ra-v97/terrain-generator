@@ -1,10 +1,12 @@
 import model.*;
 import org.javatuples.Triplet;
+import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import transformation.Transformation;
 import transformation.TransformationP3;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,6 +63,61 @@ public class TransformationP3Test extends AbstractTransformationTest {
                 createGraph2()
         );
     }
+@Test
+    public void createP2Terrain() {
+        ModelGraph graph = createEmptyGraph();
+
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0., 0., 0.));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(200., 0., 0.));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(0., 100., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(100., 100., 0.));
+        Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(200., 100., 0.));
+        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(50., 50., 0.));
+        Vertex v7 = graph.insertVertex("v7", VertexType.HANGING_NODE, new Point3d(150., 50., 0.));
+
+        //edges
+        graph.insertEdge("e0", v0, v3, true);
+        graph.insertEdge("e1", v0, v1, true);
+        graph.insertEdge("e2", v0, v6, true);
+        graph.insertEdge("e3", v3, v6, true);
+        graph.insertEdge("e4", v6, v1, true);
+        graph.insertEdge("e5", v3, v4, true);
+        graph.insertEdge("e6", v4, v1, true);
+        graph.insertEdge("e7", v4, v7, true);
+        graph.insertEdge("e8", v1, v7, true);
+        graph.insertEdge("e9", v7, v5, true);
+        graph.insertEdge("e10", v4, v5, true);
+        graph.insertEdge("e11", v1, v2, true);
+        graph.insertEdge("e12", v2, v5, true);
+
+        InteriorNode in1 = graph.insertInterior("i1", v0, v1, v6);
+        InteriorNode in2 = graph.insertInterior("i2", v0, v6, v3);
+        InteriorNode in3 = graph.insertInterior("i3", v3, v1, v4);
+        InteriorNode in4 = graph.insertInterior("i4", v1, v4, v7);
+        InteriorNode in5 = graph.insertInterior("i5", v4, v5, v7);
+        InteriorNode in6 = graph.insertInterior("i6", v1, v2, v5);
+
+//        graph.display();
+//        try {
+//            TimeUnit.SECONDS.sleep(50);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        transformation.transformGraph(graph, in1);
+        //transformation.transformGraph(graph, in2);
+
+        graph.display();
+        try {
+            TimeUnit.SECONDS.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+
+}
 
     private static Triplet<ModelGraph, InteriorNode, Vertex> createGraph() {
         ModelGraph graph = createEmptyGraph();
