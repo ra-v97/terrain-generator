@@ -22,10 +22,10 @@ public class TransformationP1 implements Transformation {
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
-        if(!interiorNode.isPartitionRequired()){
+        if (!interiorNode.isPartitionRequired()) {
             return false;
         }
-        if(getSimpleVertexCount(triangle) != 3 || getHangingVertexCount(triangle) != 0){
+        if (getSimpleVertexCount(triangle) != 3 || !checkIfTriangle(triangle)) {
             return false;
         }
 
@@ -35,7 +35,7 @@ public class TransformationP1 implements Transformation {
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
         Vertex oppositeLongestEdgeVertex = model.get(VERTEX_MAP_SIMPLE_VERTEX_OPPOSITE_LONGEST_EDGE_KEY);
 
-        if(simpleVertex1 == null || simpleVertex2 == null || oppositeLongestEdgeVertex == null){
+        if (simpleVertex1 == null || simpleVertex2 == null || oppositeLongestEdgeVertex == null) {
             throw new RuntimeException("Transformation error");
         }
 
@@ -46,14 +46,14 @@ public class TransformationP1 implements Transformation {
         GraphEdge shortEdge2 = graph.getEdgeBetweenNodes(oppositeLongestEdgeVertex, simpleVertex2)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
-        if(!longestEdge.getB()){
-            return false;
-        }
+        return (longestEdge.getL() >= shortEdge1.getL() && longestEdge.getL() >= shortEdge2.getL());
+    }
 
-        if(longestEdge.getL() < shortEdge1.getL() || longestEdge.getL() < shortEdge2.getL()){
-            return false;
-        }
-        return true;
+    private boolean checkIfTriangle(Triplet<Vertex, Vertex, Vertex> triangle) {
+        Vertex value0 = triangle.getValue0();
+        Vertex value1 = triangle.getValue1();
+        Vertex value2 = triangle.getValue2();
+        return value0.hasEdgeBetween(value1) && value1.hasEdgeBetween(value2) && value2.hasEdgeBetween(value0);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class TransformationP1 implements Transformation {
         Vertex simpleVertex2 = model.get(VERTEX_MAP_SIMPLE_VERTEX_2_KEY);
         Vertex oppositeLongestEdgeVertex = model.get(VERTEX_MAP_SIMPLE_VERTEX_OPPOSITE_LONGEST_EDGE_KEY);
 
-        if(simpleVertex1 == null || simpleVertex2 == null || oppositeLongestEdgeVertex == null){
+        if (simpleVertex1 == null || simpleVertex2 == null || oppositeLongestEdgeVertex == null) {
             throw new RuntimeException("Transformation error");
         }
 
@@ -93,12 +93,12 @@ public class TransformationP1 implements Transformation {
 
         String insertedInterior1Id = oppositeLongestEdgeVertex.getId().concat(simpleVertex1.getId()).concat(insertedVertex.getId());
         String insertedInterior2Id = oppositeLongestEdgeVertex.getId().concat(simpleVertex2.getId()).concat(insertedVertex.getId());
-        graph.insertInterior(insertedInterior1Id, oppositeLongestEdgeVertex, simpleVertex1,  insertedVertex);
-        graph.insertInterior(insertedInterior2Id, oppositeLongestEdgeVertex, simpleVertex2,  insertedVertex);
+        graph.insertInterior(insertedInterior1Id, oppositeLongestEdgeVertex, simpleVertex1, insertedVertex);
+        graph.insertInterior(insertedInterior2Id, oppositeLongestEdgeVertex, simpleVertex2, insertedVertex);
         return graph;
     }
 
-    private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph modelGraph, InteriorNode interiorNode){
+    private static Map<String, Vertex> mapTriangleVertexesToModel(ModelGraph modelGraph, InteriorNode interiorNode) {
         Map<String, Vertex> triangleModel = new HashMap<>();
 
         GraphEdge triangleLongestEdge = modelGraph.getTraingleLongestEdge(interiorNode);
@@ -107,8 +107,8 @@ public class TransformationP1 implements Transformation {
 
         Triplet<Vertex, Vertex, Vertex> triangleVertexes = interiorNode.getTriangleVertexes();
 
-        for (Object o : triangleVertexes){
-            Vertex v = (Vertex)o;
+        for (Object o : triangleVertexes) {
+            Vertex v = (Vertex) o;
             if (v != triangleLongestEdge.getNode0() && v != triangleLongestEdge.getNode1()) {
                 triangleModel.put(VERTEX_MAP_SIMPLE_VERTEX_OPPOSITE_LONGEST_EDGE_KEY, v);
                 break;
@@ -120,19 +120,8 @@ public class TransformationP1 implements Transformation {
     private static int getSimpleVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
         int count = 0;
         for (Object o : triangle) {
-            Vertex v = (Vertex)o;
-            if(v.getVertexType() == VertexType.SIMPLE_NODE){
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private static int getHangingVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
-        int count = 0;
-        for (Object o : triangle) {
-            Vertex v = (Vertex)o;
-            if(v.getVertexType() == VertexType.HANGING_NODE){
+            Vertex v = (Vertex) o;
+            if (v.getVertexType() == VertexType.SIMPLE_NODE) {
                 count++;
             }
         }
