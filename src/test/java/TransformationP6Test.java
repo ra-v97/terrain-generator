@@ -1,213 +1,213 @@
 import model.*;
+import org.javatuples.Pair;
 import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP6;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class TransformationP6Test extends AbstractTransformationTest {
-	private Transformation transformation = new TransformationP6();
+    private Transformation transformation = new TransformationP6();
 
-	@Test
-	public void conditionFailsWithIncorrectLengths(){
-		ModelGraph graph = createIncorrectLengthsGraph();
-		assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-	}
+    // SIMPLE GRAPH TESTS
+    @Test
+    public void simpleGraphShouldHaveCorrectHangingNodesCountAfterTransformation() {
+        Pair<ModelGraph, InteriorNode> simplestGraph = this.createSimplestGraph();
+        ModelGraph graph = simplestGraph.getValue0();
+        InteriorNode interiorNode = simplestGraph.getValue1();
 
-	@Test
-	public void conditionFailsWithTooFewHangingNodes(){
-		ModelGraph graph = createTooFewHangingNodesGraph();
-		assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-	}
+        assertTrue(this.transformation.isConditionCompleted(graph, interiorNode));
+        assertEquals(3, getHangingNodeSize(graph));
+        this.transformation.transformGraph(graph, interiorNode);
+        assertEquals(2, getHangingNodeSize(graph));
+    }
 
-	@Test
-	public void conditionFailsWithTooMuchHangingNodes(){
-		ModelGraph graph = createTooMuchHangingNodesGraph();
-		assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-	}
+    @Test
+    public void simpleGraphShouldHaveCorrectInteriorNodesCountAfterTransformation() {
+        Pair<ModelGraph, InteriorNode> simplestGraph = this.createSimplestGraph();
+        ModelGraph graph = simplestGraph.getValue0();
+        InteriorNode interiorNode = simplestGraph.getValue1();
 
-	@Test
-	public void conditionFailsWithoutHangingNodeOnLongestSide(){
-		ModelGraph graph = createIncorrectHangingNodePositionGraph();
-		assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-	}
+        assertTrue(this.transformation.isConditionCompleted(graph, interiorNode));
+        assertEquals(1, graph.getInteriors().size());
+        this.transformation.transformGraph(graph, interiorNode);
+        assertEquals(2, graph.getInteriors().size());
+    }
 
-	@Test
-	public void conditionPassesWithCorrectGraph(){
-		ModelGraph graph = createCorrectGraph();
-		assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-	}
+    // ENVELOPE GRAPH TESTS
+    @Test
+    public void envelopeGraphConditionCompletion() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
 
-	@Test
-	public void transformationProducesTwoInteriorNodes(){
-		ModelGraph graph = createCorrectGraph();
-		assertEquals(2, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getInteriors().size());
-	}
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            assertEquals(entry.getValue(), transformation.isConditionCompleted(graphPair.getValue0(), entry.getKey()));
+        }
+    }
 
-	@Test
-	public void transformationProducesNoNewVertices(){
-		ModelGraph graph = createCorrectGraph();
-		int vertices = graph.getVertices().size();
-		assertEquals(vertices, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getVertices().size());
-	}
+    @Test
+    public void shouldHaveCorrectHangingNodesCountAfterTransformation() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
 
-	@Test
-	public void transformationChangesVertexType(){
-		ModelGraph graph = createCorrectGraph();
-		Vertex vertex = graph.getVertex("h2").orElseThrow(AssertionError::new);
-		assertEquals(VertexType.HANGING_NODE, vertex.getVertexType());
-		transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new));
-		assertEquals(VertexType.SIMPLE_NODE, vertex.getVertexType());
-	}
+        assertEquals(3, getHangingNodeSize(graph));
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode interiorNode = entry.getKey();
 
-	@Test
-	public void transformationProducesCorrectVertexTypes(){
-		ModelGraph graph = createCorrectGraph();
-		transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new));
-		int hanging_nodes = 0, simple_nodes = 0;
-		for(Vertex v: graph.getVertices()){
-			if(v.getVertexType() == VertexType.SIMPLE_NODE){
-				simple_nodes++;
-			}
-			else{
-				hanging_nodes++;
-			}
-		}
-		Vertex vertex = graph.getVertex("h2").orElseThrow(AssertionError::new);
-		assertEquals(4,simple_nodes);
-		assertEquals(1, hanging_nodes);
-	}
+            if (transformation.isConditionCompleted(graph, interiorNode)) {
+                transformation.transformGraph(graph, interiorNode);
+            }
+        }
+        assertEquals(2, getHangingNodeSize(graph));
+    }
 
-	@Test
-	public void transformationProducesNewInteriorNodesWithCorrectParams(){
-		ModelGraph graph = createCorrectGraph();
-		InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
+    @Test
+    public void shouldHaveCorrectInteriorNodesCountAfterTransformation() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
+//        graph.display();
+//
+//        try {
+//            Thread.sleep(3000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        assertEquals(8, graph.getInteriors().size());
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode interiorNode = entry.getKey();
 
-		transformation.transformGraph(graph, interior);
-		InteriorNode interior1 = (InteriorNode) graph.getInteriors().toArray()[0];
-		InteriorNode interior2 = (InteriorNode) graph.getInteriors().toArray()[1];
+            if (transformation.isConditionCompleted(graph, interiorNode)) {
+                transformation.transformGraph(graph, interiorNode);
+            }
+        }
 
-		assertTrue(!interior1.isPartitionRequired() && !interior2.isPartitionRequired());
-	}
+//        try {
+//            Thread.sleep(300000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        assertEquals(9, graph.getInteriors().size());
+    }
 
-	@Test
-	public void transformationProducesNewEdges(){
-		ModelGraph graph = createCorrectGraph();
-		InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-		ModelGraph transformed = transformation.transformGraph(graph, interior);
-		assertEquals(12, transformed.getEdges().size());
-	}
+    @Test
+    public void shouldHaveCorrectEdgeCountAfterTransformation() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
 
-	@Test
-	public void transformationProducesNewInternalEdgeWithCorrectParams(){
-		ModelGraph graph = createCorrectGraph();
-		transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new));
-		Vertex v = graph.getVertex("v5").orElseThrow(AssertionError::new);
-		Vertex h = graph.getVertex("h2").orElseThrow(AssertionError::new);
-		GraphEdge internalEdge = graph.getEdge(v, h).orElseThrow(AssertionError::new);
+        assertEquals(41, graph.getEdges().size());
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode iNode = entry.getKey();
 
-		assertFalse(internalEdge.getB());
-	}
+            if (transformation.isConditionCompleted(graph, iNode)) {
+                transformation.transformGraph(graph, iNode);
+            }
+        }
+        assertEquals(45, graph.getEdges().size());
+    }
 
-	@Test
-	public void transformationProducesNewInternalEdgeWithCorrectLength(){
-		ModelGraph graph = createCorrectGraph();
-		transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new));
-		Vertex v = graph.getVertex("v5").orElseThrow(AssertionError::new);
-		Vertex h = graph.getVertex("h2").orElseThrow(AssertionError::new);
-		GraphEdge internalEdge = graph.getEdge(v, h).orElseThrow(AssertionError::new);
+    @Test
+    public void shouldHaveCorrectNewEdgePropertiesAfterTransformation() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
 
-		assertEquals(Point3d.distance(v.getCoordinates(), h.getCoordinates()), internalEdge.getL());
-	}
+        InteriorNode iNode = graph.getInterior("i3").orElseThrow(IllegalStateException::new);
+        Vertex v2 = getVertexIfExists(graph, "v2");
+        Vertex v8 = getVertexIfExists(graph, "v8");
 
+        Double edgeLength = Math.sqrt(Math.pow(v2.getXCoordinate() - v8.getXCoordinate(), 2.0) +
+                Math.pow(v2.getYCoordinate() - v8.getYCoordinate(), 2.0) +
+                Math.pow(v2.getZCoordinate() - v8.getZCoordinate(), 2.0));
 
-	private ModelGraph createIncorrectLengthsGraph() {
-		ModelGraph graph = new ModelGraph("testGraph");
-		Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
-		Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
-		Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
-		Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 1.0, 0.0));
-		Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(1.0, 2.0, 0.0));
+        assertFalse(graph.getEdgeBetweenNodes(v2, v8).isPresent());
+        transformation.transformGraph(graph, iNode);
 
-		graph.insertEdge("e1", v1, h2, true);
-		graph.insertEdge("e2", h2, v3, true);
-		graph.insertEdge("e3", v3, h4, true);
-		graph.insertEdge("e4", h4, v5, true);
-		graph.insertEdge("e5", v1, v5, true);
+        Optional<GraphEdge> edge = graph.getEdgeBetweenNodes(v2, v8);
+        assertTrue(edge.isPresent());
+        assertEquals(edgeLength, edge.get().getL());
+    }
 
-		graph.insertInterior("i1", v1, v3, v5, h2, h4);
-		return graph;
-	}
+    private Pair<ModelGraph, InteriorNode> createSimplestGraph() {
+        ModelGraph graph = new ModelGraph("simplestGraphTest");
 
-	private ModelGraph createTooFewHangingNodesGraph() {
-		ModelGraph graph = new ModelGraph("testGraph");
-		Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
-		Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
-		Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
-		Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(1.0, 1.0, 0.0));
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0., 0., 0.));
+        Vertex v1 = graph.insertVertex("v1", VertexType.HANGING_NODE, new Point3d(50., 0., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(75., 43., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(50., 86., 0.));
+        Vertex v5 = graph.insertVertex("v5", VertexType.HANGING_NODE, new Point3d(25., 43., 0.));
 
-		graph.insertEdge("e1", v1, h2, true);
-		graph.insertEdge("e2", h2, v3, true);
-		graph.insertEdge("e3", v3, v5, true);
-		graph.insertEdge("e5", v1, v5, true);
+        graph.insertEdge("e0", v0, v1);
+        graph.insertEdge("e1", v1, v2);
+        graph.insertEdge("e2", v2, v3);
+        graph.insertEdge("e3", v3, v4);
+        graph.insertEdge("e4", v4, v5);
+        graph.insertEdge("e5", v5, v0);
 
-		graph.insertInterior("i1", v1, v3, v5, h2);
-		return graph;
-	}
+        InteriorNode interiorNode = graph.insertInterior("i1", v0, v2, v4);
+        return Pair.with(graph, interiorNode);
+    }
 
-	private ModelGraph createTooMuchHangingNodesGraph() {
-		ModelGraph graph = new ModelGraph("testGraph");
-		Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
-		Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
-		Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(2.0, 0.0, 0.0));
-		Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 0.5, 0.0));
-		Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(1.0, 1.0, 0.0));
+    private Pair<ModelGraph, Map<InteriorNode, Boolean>> createEnvelopeGraph() {
+        ModelGraph graph = new ModelGraph("envelopeGraphTest");
 
-		graph.insertEdge("e1", v1, h2, true);
-		graph.insertEdge("e2", h2, v3, true);
-		graph.insertEdge("e3", v3, h4, true);
-		graph.insertEdge("e4", h4, v5, true);
-		graph.insertEdge("e5", v1, v5, true);
+        // vertices top -> down; in the same level: left -> right
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(150., 150., 0.));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(100., 100., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.HANGING_NODE, new Point3d(150., 100., 0.));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(250., 100., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(100., 50., 0.));
+        Vertex v5 = graph.insertVertex("v5", VertexType.HANGING_NODE, new Point3d(150., 50., 0.));
+        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(250., 50., 0.));
+        Vertex v7 = graph.insertVertex("v7", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v8 = graph.insertVertex("v8", VertexType.SIMPLE_NODE, new Point3d(200., 0., 0.));
+        Vertex v9 = graph.insertVertex("v9", VertexType.SIMPLE_NODE, new Point3d(250., 0., 0.));
 
-		graph.insertInterior("i1", v1, v3, v5, h2, h4);
-		return graph;
-	}
+        //edges
+        graph.insertEdge("e0", v0, v1);
+        graph.insertEdge("e1", v0, v2);
+        graph.insertEdge("e2", v0, v3);
+        graph.insertEdge("e3", v1, v2);
+        graph.insertEdge("e4", v1, v4);
+        graph.insertEdge("e5", v1, v5);
+        graph.insertEdge("e6", v2, v3);
+        graph.insertEdge("e7", v3, v6);
+        graph.insertEdge("e8", v3, v9);
+        graph.insertEdge("e9", v4, v5);
+        graph.insertEdge("e10", v4, v7);
+        graph.insertEdge("e11", v5, v7);
+        graph.insertEdge("e12", v5, v8);
+        graph.insertEdge("e13", v6, v8);
+        graph.insertEdge("e14", v6, v9);
+        graph.insertEdge("e15", v7, v8);
+        graph.insertEdge("e16", v8, v9);
 
-	private ModelGraph createIncorrectHangingNodePositionGraph() {
-		ModelGraph graph = new ModelGraph("testGraph");
-		Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
-		Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
-		Vertex h3 = graph.insertVertex("h3", VertexType.HANGING_NODE, new Point3d(1.5, 1.0, 0.0));
-		Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(1.0, 1.0, 0.0));
-		Vertex h5 = graph.insertVertex("h5", VertexType.HANGING_NODE, new Point3d(0.5, 0.5, 0.0));
+        // i-nodes
+        Map<InteriorNode, Boolean> nodesWithFlag = new HashMap<>();
+        nodesWithFlag.put(graph.insertInterior("i0", v0, v1, v2), false);
+        nodesWithFlag.put(graph.insertInterior("i1", v0, v2, v3), false);
+        nodesWithFlag.put(graph.insertInterior("i2", v1, v4, v5), false);
+        nodesWithFlag.put(graph.insertInterior("i3", v1, v3, v8), true);
+        nodesWithFlag.put(graph.insertInterior("i4", v3, v6, v9), false);
+        nodesWithFlag.put(graph.insertInterior("i5", v4, v5, v7), false);
+        nodesWithFlag.put(graph.insertInterior("i6", v5, v7, v8), false);
+        nodesWithFlag.put(graph.insertInterior("i7", v6, v8, v9), false);
 
-		graph.insertEdge("e1", v1, v2, true);
-		graph.insertEdge("e2", v2, h3, true);
-		graph.insertEdge("e3", h3, v4, true);
-		graph.insertEdge("e4", v4, h5, true);
-		graph.insertEdge("e5", h5, v1, true);
+        return Pair.with(graph, nodesWithFlag);
+    }
 
-		graph.insertInterior("i1", v1, v2, v4, h3, h5);
-		return graph;
-	}
+    private int getHangingNodeSize(ModelGraph graph) {
+        return (int) graph.getVertices()
+                .stream()
+                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
+                .count();
+    }
 
-	private ModelGraph createCorrectGraph() {
-		ModelGraph graph = new ModelGraph("testGraph");
-		Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0,0.0));
-		Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
-		Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
-		Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 0.5, 0.0));
-		Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(1.0, 1.0, 0.0));
-
-		graph.insertEdge("e1", v1, h2, true);
-		graph.insertEdge("e2", h2, v3, true);
-		graph.insertEdge("e3", v3, h4, true);
-		graph.insertEdge("e4", h4, v5, true);
-		graph.insertEdge("e5", v1, v5, true);
-
-		graph.insertInterior("i1", v1, v3, v5, h2, h4);
-		return graph;
-	}
-
+    private Vertex getVertexIfExists(ModelGraph graph, String vertexId) {
+        return graph.getVertex(vertexId)
+                .orElseThrow(() -> new IllegalStateException("Cannot find vertex with id: " + vertexId));
+    }
 }
