@@ -23,7 +23,15 @@ public class ModelGraph extends MultiGraph {
     }
 
     public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
-        return getEdgeById(v1.getEdgeBetween(v2).getId());
+        final Edge edge1 = v1.getEdgeBetween(v2);
+        if (edge1 != null) {
+            return getEdgeById(edge1.getId());
+        }
+        final Edge edge2 = v2.getEdgeBetween(v1);
+        if (edge2 != null) {
+            return getEdgeById(edge2.getId());
+        }
+        return Optional.empty();
     }
 
     public Vertex insertVertex(Vertex vertex) {
