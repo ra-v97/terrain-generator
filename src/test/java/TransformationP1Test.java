@@ -77,9 +77,9 @@ public class TransformationP1Test extends AbstractTransformationTest {
         Vertex v1 = new Vertex(graph, "v1", vType1, new Point3d(0.0, 0.0, -42.0));
         Vertex v2 = new Vertex(graph, "v2", vType2, new Point3d(0.0, 10.0, -42.0));
         Vertex v3 = new Vertex(graph, "v3", vType3, new Point3d(6.0, 6.0, -42.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
+        GraphEdge e1 = new GraphEdge("v1v2", "E", new Pair<>(v1, v2), true);
+        GraphEdge e2 = new GraphEdge("v2v3", "E", new Pair<>(v2, v3), true);
+        GraphEdge e3 = new GraphEdge("v3v1", "E", new Pair<>(v3, v1), true);
 
         return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
     }
@@ -111,7 +111,7 @@ public class TransformationP1Test extends AbstractTransformationTest {
         }
     }
 
-    public ModelGraph ultimateTestGenerator() {
+    private ModelGraph ultimateTestGenerator() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(100.0, 0.0, 0.0));
