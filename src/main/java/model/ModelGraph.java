@@ -23,15 +23,15 @@ public class ModelGraph extends MultiGraph {
     }
 
     public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
-
-        try {
-            return getEdgeById(v1.getEdgeBetween(v2).getId());
+        final Edge edge1 = v1.getEdgeBetween(v2);
+        if (edge1 != null) {
+            return getEdgeById(edge1.getId());
         }
-        catch (NullPointerException e){
-            return Optional.empty();
+        final Edge edge2 = v2.getEdgeBetween(v1);
+        if (edge2 != null) {
+            return getEdgeById(edge2.getId());
         }
-
-//       return getEdgeById(v1.getEdgeBetween(v2).getId());
+        return Optional.empty();
     }
 
     public Vertex insertVertex(Vertex vertex) {
@@ -127,7 +127,7 @@ public class ModelGraph extends MultiGraph {
         deleteEdge(edge.getId());
     }
 
-    public void deleteEdge(String edgeId){
+    public void deleteEdge(String edgeId) {
         edges.remove(edgeId);
         this.removeEdge(edgeId);
     }
@@ -148,7 +148,7 @@ public class ModelGraph extends MultiGraph {
         return this.getVertexesBetween(beginning, end).stream().findFirst();
     }
 
-    public GraphEdge getTraingleLongestEdge(InteriorNode interiorNode){
+    public GraphEdge getTraingleLongestEdge(InteriorNode interiorNode) {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangle();
         Vertex v1 = triangle.getValue0();
         Vertex v2 = triangle.getValue1();
@@ -161,9 +161,9 @@ public class ModelGraph extends MultiGraph {
         GraphEdge edge3 = getEdgeBetweenNodes(v1, v3)
                 .orElseThrow(() -> new RuntimeException("Unknown edge id"));
 
-        if(edge1.getL() >= edge2.getL() && edge1.getL() >= edge3.getL()) {
+        if (edge1.getL() >= edge2.getL() && edge1.getL() >= edge3.getL()) {
             return edge1;
-        }else if(edge2.getL() >= edge3.getL()) {
+        } else if (edge2.getL() >= edge3.getL()) {
             return edge2;
         }
         return edge3;
