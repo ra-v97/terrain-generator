@@ -15,7 +15,7 @@ public class AbstractTransformationTest {
         return graph;
     }
 
-    public ModelGraph populateTestGraphWithLists(ModelGraph graph, Vertex[] vs, GraphEdge[] es, InteriorNode in, boolean partitionRequired){
+    public static ModelGraph populateTestGraphWithLists(ModelGraph graph, Vertex[] vs, GraphEdge[] es, InteriorNode in, boolean partitionRequired){
         for (Vertex v : vs) {
             graph.insertVertex(v);
         }
