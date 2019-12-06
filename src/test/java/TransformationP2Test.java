@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -115,12 +114,12 @@ public class TransformationP2Test extends AbstractTransformationTest {
         graph.insertInterior("i5", v4, v5, v7);
         graph.insertInterior("i6", v1, v2, v5); //transform
 
-        graph.display();
-        try {
-            TimeUnit.SECONDS.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        graph.display();
+//        try {
+//            TimeUnit.SECONDS.sleep(50);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         return graph;
     }
 
