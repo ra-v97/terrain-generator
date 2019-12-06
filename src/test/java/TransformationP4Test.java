@@ -4,250 +4,220 @@ import org.junit.Test;
 import transformation.Transformation;
 import transformation.TransformationP4;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+
 
 public class TransformationP4Test extends AbstractTransformationTest {
     private Transformation transformation = new TransformationP4();
 
     @Test
-    public void conditionPassesWithObtuseTriangle(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    public void simpleGraphHangingNode() {
+        Pair<ModelGraph, InteriorNode> simplestGraph = this.createSimplestGraph();
+        ModelGraph graph = simplestGraph.getValue0();
+        InteriorNode interiorNode = simplestGraph.getValue1();
+
+        assertTrue(this.transformation.isConditionCompleted(graph, interiorNode));
+        assertEquals(2, getHangingNodeSize(graph));
+        this.transformation.transformGraph(graph, simplestGraph.getValue1());
+        assertEquals(1, getHangingNodeSize(graph));
+    }
+
+    private static int getHangingNodeSize(ModelGraph graph) {
+        return (int) graph.getVertices()
+                .stream()
+                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
+                .count();
     }
 
     @Test
-    public void transformationProducesTwoInteriorNodes(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        assertEquals(2, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getInteriors().size());
+    public void simpleGraphInteriorNumber() {
+        Pair<ModelGraph, InteriorNode> simplestGraph = this.createSimplestGraph();
+        ModelGraph graph = simplestGraph.getValue0();
+        InteriorNode interiorNode = simplestGraph.getValue1();
+
+        assertTrue(this.transformation.isConditionCompleted(graph, interiorNode));
+        assertEquals(1, graph.getInteriors().size());
+        this.transformation.transformGraph(graph, simplestGraph.getValue1());
+        assertEquals(2, graph.getInteriors().size());
+    }
+
+    private Pair<ModelGraph, InteriorNode> createSimplestGraph() {
+        ModelGraph graph = new ModelGraph("simplestGraphTest");
+
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0., 0., 0.));
+        Vertex v1 = graph.insertVertex("v1", VertexType.HANGING_NODE, new Point3d(50., 0., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(75., 43., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(50., 86., 0.));
+
+        graph.insertEdge("e0", v0, v1);
+        graph.insertEdge("e1", v1, v2);
+        graph.insertEdge("e2", v2, v3);
+        graph.insertEdge("e3", v3, v4);
+        graph.insertEdge("e4", v4, v0);
+
+
+        InteriorNode interiorNode = graph.insertInterior("i1", v0, v2, v4);
+        return Pair.with(graph, interiorNode);
     }
 
     @Test
-    public void conditionFailsWithAcuteTriangle(){
-        ModelGraph graph = createAcuteTriangleGraph(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    public void envelopeGraphHangingNodesCount() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
+
+        assertEquals(4, getHangingNodeSize(graph));
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode iNode = entry.getKey();
+
+            if (transformation.isConditionCompleted(graph, iNode)) {
+                transformation.transformGraph(graph, iNode);
+            }
+        }
+
+        assertEquals(2, getHangingNodeSize(graph));
     }
 
-    @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForAcuteTriangle(){
-        ModelGraph graph = createObtuseTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForObtuseTriangle(){
-        ModelGraph graph = createObtuseTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
+    public void envelopeGraphConditionCompletion() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
 
-    @Test
-    public void conditionFailsWhenPartitioningIsNotNeededForRightTriangle(){
-        ModelGraph graph = createRightTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithRightTriangle(){
-        ModelGraph graph = createRightTriangleGraph(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithoutBorderEdges(){
-        ModelGraph graph = createInternalObtuseTriangleGraph(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithImproperBorderEdges(){
-        ModelGraph graph = createSemiInternalObtuseTriangleGraph(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void transformationProducesOneNewSimpleVertex(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        assertEquals(VertexType.SIMPLE_NODE, graph.getVertex(interior.getId()).orElseThrow(AssertionError::new).getVertexType());
-    }
-
-    @Test
-    public void transformationProducesTheNewVertexOnTheEdge(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
-        Vertex v3 = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        assertEquals(Point3d.middlePoint(v1.getCoordinates(), v3.getCoordinates()), newVertex.getCoordinates());
-    }
-
-    @Test
-    public void transformationProducesNewInteriorNodesWithCorrectParams(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-
-        transformation.transformGraph(graph, interior);
-        InteriorNode interior1 = (InteriorNode) graph.getInteriors().toArray()[0];
-        InteriorNode interior2 = (InteriorNode) graph.getInteriors().toArray()[1];
-
-        assertTrue(!interior1.isPartitionRequired() && !interior2.isPartitionRequired());
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            assertEquals(entry.getValue(), transformation.isConditionCompleted(graphPair.getValue0(), entry.getKey()));
+        }
     }
 
 
     @Test
-    public void transformationProducesNewEdges(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        ModelGraph transformed = transformation.transformGraph(graph, interior);
-        System.out.println(transformed.getEdges());
-        assertEquals(12, transformed.getEdges().size());
+    public void envelopeGraphInternalNodesCount() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
+
+        assertEquals(9, graph.getInteriors().size());
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode iNode = entry.getKey();
+
+            if (transformation.isConditionCompleted(graph, iNode)) {
+                transformation.transformGraph(graph, iNode);
+            }
+        }
+        assertEquals(11, graph.getInteriors().size());
     }
 
     @Test
-    public void transformationProducesNewOppositeEdgesWithCorrectParams(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
-        Vertex v3 = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        GraphEdge oldOpposite = graph.getEdge(v1, v3).orElseThrow(AssertionError::new);
+    public void envelopeGraphEdgesCount() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
 
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        GraphEdge opposite1 = graph.getEdge(v1, newVertex).orElseThrow(AssertionError::new);
-        GraphEdge opposite2 = graph.getEdge(newVertex, v3).orElseThrow(AssertionError::new);
+        assertEquals(46, graph.getEdges().size());
+        for (Map.Entry<InteriorNode, Boolean> entry : graphPair.getValue1().entrySet()) {
+            InteriorNode iNode = entry.getKey();
 
-        assertTrue(opposite1.getB() == opposite2.getB() == oldOpposite.getB());
+            if (transformation.isConditionCompleted(graph, iNode)) {
+
+                transformation.transformGraph(graph, iNode);
+            }
+        }
+        assertEquals(54, graph.getEdges().size());
     }
 
     @Test
-    public void transformationProducesNewOppositeEdgesWithCorrectLength(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
-        Vertex v3 = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        GraphEdge oldOpposite = graph.getEdge(v1, v3).orElseThrow(AssertionError::new);
+    public void envelopeGraphNewEdgeProperties() {
+        Pair<ModelGraph, Map<InteriorNode, Boolean>> graphPair = createEnvelopeGraph();
+        ModelGraph graph = graphPair.getValue0();
+        InteriorNode iNode = graph.getInterior("i5").orElseThrow(IllegalStateException::new);
 
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        GraphEdge opposite1 = graph.getEdge(v1, newVertex).orElseThrow(AssertionError::new);
-        GraphEdge opposite2 = graph.getEdge(newVertex, v3).orElseThrow(AssertionError::new);
+        Vertex v1 = getVertexIfExists(graph, "v1");
+        Vertex v3 = getVertexIfExists(graph, "v3");
 
-        assertEquals(oldOpposite.getL(), opposite1.getL() + opposite2.getL());
+        Double edgeLength = Math.sqrt(Math.pow(v1.getXCoordinate() - v3.getXCoordinate(), 2.0) +
+                Math.pow(v1.getYCoordinate() - v3.getYCoordinate(), 2.0) +
+                Math.pow(v1.getZCoordinate() - v3.getZCoordinate(), 2.0));
+
+        assertFalse(graph.getEdgeBetweenNodes(v1, v3).isPresent());
+        transformation.transformGraph(graph, iNode);
+
+        Optional<GraphEdge> edge = graph.getEdgeBetweenNodes(v1, v3);
+        assertFalse(edge.isPresent());
     }
 
-    @Test
-    public void transformationProducesNewInternalEdgeWithCorrectParams(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex h = graph.getVertex("v2").orElseThrow(AssertionError::new);
-        GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
 
-        assertFalse(internalEdge.getB());
+    private Pair<ModelGraph, Map<InteriorNode, Boolean>> createEnvelopeGraph() {
+        ModelGraph graph = new ModelGraph("envelopeGraphTest");
+
+        // vertices top -> down; in the same level: left -> right
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0., 100., 0.));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(100., 100., 0.));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(250., 100., 0.));
+
+        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(50., 50., 0.));
+        Vertex v4 = graph.insertVertex("v4", VertexType.HANGING_NODE, new Point3d(100., 50., 0.));
+        Vertex v5 = graph.insertVertex("v5", VertexType.HANGING_NODE, new Point3d(150., 50., 0.));
+        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(225., 50., 0.));
+
+        Vertex v7 = graph.insertVertex("v7", VertexType.SIMPLE_NODE, new Point3d(0., 0., 0.));
+        Vertex v8 = graph.insertVertex("v8", VertexType.SIMPLE_NODE, new Point3d(100., 0., 0.));
+        Vertex v9 = graph.insertVertex("v9", VertexType.SIMPLE_NODE, new Point3d(200., 0., 0.));
+        Vertex v10 = graph.insertVertex("v10", VertexType.SIMPLE_NODE, new Point3d(250., 0., 0.));
+
+        //edges
+        graph.insertEdge("e0", v0, v1);
+        graph.insertEdge("e2", v0, v3);
+        graph.insertEdge("e1", v0, v7);
+
+
+        graph.insertEdge("e3", v1, v4);
+        graph.insertEdge("e4", v1, v5);
+        graph.insertEdge("e5", v1, v2);
+
+
+        graph.insertEdge("e6", v2, v6);
+        graph.insertEdge("e7", v2, v10);
+
+        graph.insertEdge("e8", v4, v5);
+        graph.insertEdge("e9", v4, v8);
+
+        graph.insertEdge("e10", v5, v8);
+        graph.insertEdge("e11", v5, v9);
+
+        graph.insertEdge("e12", v6, v9);
+        graph.insertEdge("e13", v6, v10);
+
+        graph.insertEdge("e14", v9, v8);
+        graph.insertEdge("e15", v9, v10);
+
+        graph.insertEdge("e16", v3, v7);
+        graph.insertEdge("e17", v3, v8);
+
+        graph.insertEdge("e18", v7, v8);
+
+        // i-nodes
+        Map<InteriorNode, Boolean> nodesToFlags = new HashMap<>();
+        nodesToFlags.put(graph.insertInterior("i0", v0, v3, v7), false);
+        nodesToFlags.put(graph.insertInterior("i1", v0, v1, v8), true);
+        nodesToFlags.put(graph.insertInterior("i2", v1, v4, v5), false);
+        nodesToFlags.put(graph.insertInterior("i5", v1, v2, v9), true);
+        nodesToFlags.put(graph.insertInterior("i6", v2, v6, v10), false);
+        nodesToFlags.put(graph.insertInterior("i8", v3, v7, v8), false);
+        nodesToFlags.put(graph.insertInterior("i3", v4, v5, v8), false);
+        nodesToFlags.put(graph.insertInterior("i4", v5, v8, v9), false);
+        nodesToFlags.put(graph.insertInterior("i7", v6, v9, v10), false);
+
+        return Pair.with(graph, nodesToFlags);
     }
 
-    @Test
-    public void transformationProducesNewInternalEdgeWithCorrectLength(){
-        ModelGraph graph = createObtuseTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex h = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
 
-        assertEquals(Point3d.distance(newVertex.getCoordinates(), h.getCoordinates()), internalEdge.getL());
+    private Vertex getVertexIfExists(ModelGraph graph, String vertexId) {
+        return graph.getVertex(vertexId)
+                .orElseThrow(() -> new IllegalStateException("Cannot find vertex with id: " + vertexId));
     }
 
-    private ModelGraph createObtuseTriangleGraph(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(10.0, 0.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(10.0, 10.0, 0.0));
-
-        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(6.0, 0.0, 0.0));
-
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
-
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
-
-        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
-    }
-
-    private ModelGraph createAcuteTriangleGraph(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 20.0, 0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(6.0, 6.0, 0));
-
-        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(3.0, 3.0, 0.0));
-
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
-
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
-
-        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
-    }
-
-    private ModelGraph createInternalObtuseTriangleGraph(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 12.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, -50.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(0.0, 6.0, 0.0));
-
-        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(3.0, -25.0, 0.0));
-
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
-
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
-
-        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
-    }
-
-    private ModelGraph createSemiInternalObtuseTriangleGraph(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 6.0, 1.0));
-
-        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(0.0, 5.0, 0.0));
-
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
-
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
-
-        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
-    }
-
-    private ModelGraph createRightTriangleGraph(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(8.0, 10.0, 0.0));
-
-        Vertex h = new Vertex(graph, "h1", VertexType.HANGING_NODE, new Point3d(4.0, 10.0, 0.0));
-
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, h), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(h, v2), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v2, v3), true);
-        GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
-
-        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
-
-        return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
-    }
 
 }
