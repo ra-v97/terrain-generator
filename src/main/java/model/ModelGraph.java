@@ -5,7 +5,6 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.javatuples.Triplet;
-import org.junit.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,9 +22,15 @@ public class ModelGraph extends MultiGraph {
     }
 
     public Optional<GraphEdge> getEdgeBetweenNodes(Vertex v1, Vertex v2) {
-        Edge edge = v1.getEdgeBetween(v2);
-        Assert.assertNotNull("No edge between nodes: " + v1.getId() +" and: "+ v2.getId(), edge);
-        return getEdgeById(edge.getId());
+        final Edge edge1 = v1.getEdgeBetween(v2);
+        if (edge1 != null) {
+            return getEdgeById(edge1.getId());
+        }
+        final Edge edge2 = v2.getEdgeBetween(v1);
+        if (edge2 != null) {
+            return getEdgeById(edge2.getId());
+        }
+        return Optional.empty();
     }
 
     public Vertex insertVertex(Vertex vertex) {
