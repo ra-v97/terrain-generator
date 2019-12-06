@@ -7,11 +7,9 @@ import transformation.Transformation;
 import transformation.TransformationP2;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,8 +63,6 @@ public class TransformationP2Test extends AbstractTransformationTest {
     @Test
     public void p2TransformationTest(){
         ModelGraph graph = createP2Graph();
-//        List<Integer> triangles = Arrays.stream(new int[] {3,6}).boxed().collect(Collectors.toList());
-//        List<Integer> triangles = new ArrayList<Integer>();
         List<Integer> interiorsToTransform = Arrays.asList(3, 6);
         for(Integer interior: interiorsToTransform) {
             transformation.transformGraph(graph, graph.getInterior("i" + interior).get());
@@ -75,24 +71,11 @@ public class TransformationP2Test extends AbstractTransformationTest {
         assertTrue(graph.getEdgeBetweenNodes(graph.getVertex("v6").get(),graph.getVertex("v4").get()).isPresent());
 
     }
-//    @Test
-//    public void p2ConditionCompletedTest(){
-//        ModelGraph modelGraph = createP2Graph();
-//        List<Integer> intreriorsToTransform = Arrays.asList(3, 6);
-//        for(Integer interior: intreriorsToTransform) {
-//            transformation.transformGraph(modelGraph, modelGraph.getInterior("i" + interior).get());
-//        }
-//        assertTrue(transformation.isConditionCompleted(modelGraph, modelGraph.getInterior("i3").get()));
-//        assertTrue(transformation.isConditionCompleted(modelGraph, modelGraph.getInterior("i6").get()));
-//
-////        transformationP2.transformGraph(modelGraph, modelGraph.getInterior("i1").get());
-//    }
 
     @Test
     public void p2TransformationTestInteriorsCount(){
         ModelGraph graph = createP2Graph();
         List<Integer> interiorsToTransform = Arrays.asList(3, 6);
-//        transformation.transformGraph(graph, graph.getInterior("i2").get());
         for(Integer interior: interiorsToTransform)
             transformation.transformGraph(graph, graph.getInterior("i" + interior).get());
         assertEquals(8, graph.getInteriors().size());
@@ -132,12 +115,12 @@ public class TransformationP2Test extends AbstractTransformationTest {
         graph.insertInterior("i5", v4, v5, v7);
         graph.insertInterior("i6", v1, v2, v5); //transform
 
-//        graph.display();
-//        try {
-//            TimeUnit.SECONDS.sleep(50);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        graph.display();
+        try {
+            TimeUnit.SECONDS.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return graph;
     }
 
