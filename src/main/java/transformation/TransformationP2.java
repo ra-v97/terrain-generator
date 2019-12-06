@@ -6,7 +6,7 @@ import org.javatuples.Triplet;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TransformationP2old implements Transformation {
+public class TransformationP2 implements Transformation {
 
     private static final String VERTEX_MAP_SIMPLE_VERTEX_3_KEY = "simpleVertex3";
 
