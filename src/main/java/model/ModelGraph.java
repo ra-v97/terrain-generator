@@ -2,6 +2,7 @@ package model;
 
 import common.ElementAttributes;
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.Element;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.javatuples.Triplet;
@@ -30,6 +31,8 @@ public class ModelGraph extends MultiGraph {
 
     public Vertex insertVertex(Vertex vertex) {
         Node node = this.addNode(vertex.getId());
+        node.addAttribute("ui.class", vertex.getVertexType().getSymbol());
+        node.addAttribute("ui.label", vertex.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, vertex.getXCoordinate(), vertex.getYCoordinate(), vertex.getZCoordinate());
         vertexes.put(vertex.getId(), vertex);
@@ -74,6 +77,7 @@ public class ModelGraph extends MultiGraph {
         Node node = this.addNode(interiorNode.getId());
         node.setAttribute(ElementAttributes.FROZEN_LAYOUT);
         node.setAttribute(ElementAttributes.XYZ, interiorNode.getXCoordinate(), interiorNode.getYCoordinate(), interiorNode.getZCoordinate());
+        node.addAttribute("ui.class", "important");
         interiors.put(id, interiorNode);
         insertEdge(id.concat(v1.getId()), interiorNode, v1);
         insertEdge(id.concat(v2.getId()), interiorNode, v2);
@@ -131,6 +135,9 @@ public class ModelGraph extends MultiGraph {
     }
 
     public List<Vertex> getVertexesBetween(Vertex beginning, Vertex end) {
+        if(beginning.getEdgeBetween(end) != null){
+            return new LinkedList<>();
+        }
         return this.vertexes
                 .values()
                 .stream()
@@ -164,7 +171,45 @@ public class ModelGraph extends MultiGraph {
     }
 
     private boolean isVertexBetween(Vertex v, Vertex beginning, Vertex end) {
-        return beginning.getEdgeBetween(v.getId()) != null && v.getEdgeBetween(end.getId()) != null;
+        double epsilon = .001;
+        double xd = Math.abs(calculateInlineMatrixDeterminant(v, beginning, end));
+        if(isVertexSameAs(v, beginning) || isVertexSameAs(v,end)){
+            return false;
+        } else return areCoordinatesMatching(v, beginning, end)
+                && Math.abs(calculateInlineMatrixDeterminant(v, beginning, end)) < epsilon;
+    }
+
+    private boolean isVertexSameAs(Vertex a, Vertex b){
+        return a.getCoordinates().equals(b.getCoordinates());
+    }
+
+    private boolean areCoordinatesMatching(Vertex v, Vertex beginning, Vertex end){
+        return v.getXCoordinate() <= Math.max(beginning.getXCoordinate(), end.getXCoordinate())
+                && v.getXCoordinate() >= Math.min(beginning.getXCoordinate(), end.getXCoordinate())
+                && v.getYCoordinate() <= Math.max(beginning.getYCoordinate(), end.getYCoordinate())
+                && v.getYCoordinate() >= Math.min(beginning.getYCoordinate(), end.getYCoordinate());
+    }
+
+    /*
+    Basic matrix calculation to check if points are in line with each other
+    The matrix looks like this:
+    | a.x, a.y, a.z |
+    | b.x, b.y, b.z |
+    | c.x, c.y, c.z |
+
+    so if we calculate det of that matrix and it is equal to 0 it means that all points are in straight line
+     */
+    private double calculateInlineMatrixDeterminant(Vertex v, Vertex beginning, Vertex end) {
+        Point3d a = v.getCoordinates();
+        Point3d b = beginning.getCoordinates();
+        Point3d c = end.getCoordinates();
+
+        return a.getX()*b.getY()*c.getZ()
+                + a.getY()*b.getZ()*c.getX()
+                + a.getZ()*b.getX()*c.getY()
+                - a.getZ()*b.getY()*c.getX()
+                - a.getX()*b.getZ()*c.getY()
+                - a.getY()*b.getX()*c.getZ();
     }
 
     public Optional<GraphEdge> getEdge(Vertex v1, Vertex v2) {

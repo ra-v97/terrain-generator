@@ -16,7 +16,7 @@ public class Vertex extends GraphNode {
 
     public Vertex(AbstractGraph graph, String id, VertexType vertexType, Point3d coordinates) {
         super(graph, id, vertexType.getSymbol(), coordinates);
-        this.vertexType = vertexType;
+        this.setVertexType(vertexType);
     }
 
     public VertexType getVertexType() {
@@ -24,6 +24,8 @@ public class Vertex extends GraphNode {
     }
 
     public Vertex setVertexType(VertexType type){
+        this.removeAttribute("ui.class");
+        this.addAttribute("ui.class", type.getSymbol());
         this.vertexType = type;
         return this;
     }
