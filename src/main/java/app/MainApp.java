@@ -7,7 +7,16 @@ import org.javatuples.Pair;
 import processor.MapProcessingUtil;
 import transformation.Transformation;
 import transformation.TransformationP1;
-import transformation.TransformationP7;
+import transformation.TransformationP2;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainApp {
 
@@ -61,7 +70,7 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
-    private static Pair<ModelGraph, InteriorNode> task15(){
+    private static Pair<ModelGraph, InteriorNode> task15() {
         ModelGraph graph = new ModelGraph("testGraph");
         Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
         Vertex h2 = graph.insertVertex("h2", VertexType.HANGING_NODE, new Point3d(1.0, 0.0, 0.0));
@@ -117,38 +126,58 @@ public class MainApp {
         return new Pair<>(graph, in1);
     }
 
+    private TerrainMap loadData() {
+        File file = new File(this.getClass().getResource("/poland.data").getPath());
+        byte[] bytes;
+        try {
+            bytes = Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        int dimension = (int) Math.floor(Math.sqrt(bytes.length/2f));
+
+        ShortBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+        TerrainMap map = new TerrainMap(dimension, dimension);
+        for (Integer i = 0; i < dimension; i++) {
+            for (Integer j = 0; j < dimension; j++) {
+                map.addPoint(j, i, new Point3d(j, i, buffer.get(i * dimension + j)));
+            }
+            if (i % 10 == 0)
+                System.out.println("Row " + i);
+        }
+        return map;
+    }
+
     public static void main(String[] args) {
         BasicConfigurator.configure();
 
-        Pair<ModelGraph, InteriorNode> task = task1();
-        ModelGraph graph = task.getValue0();
-        InteriorNode interiorNode = task.getValue1();
-
-        Transformation t1 = new TransformationP1();
-        log.info(String.format("Condition state for transformation P1: %b", t1.isConditionCompleted(graph, interiorNode)));
-
+        MainApp app = new MainApp();
+        TerrainMap map = app.loadData();
+        Runtime.getRuntime().gc();
+        ModelGraph graph = MapProcessingUtil.spanGraphOverTerrain(map);
         graph.display();
-
         try {
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        t1.transformGraph(graph, interiorNode);
+        System.out.println(MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1));
+        List<Transformation> transformations = Arrays.asList(new TransformationP1(), new TransformationP2());
+        MapProcessingUtil.markTrianglesForRefinement(graph, map, 0.1).forEach(interiorNode ->
+        {
+            for(Transformation p : transformations){
+                try{
+                    if(p.isConditionCompleted(graph, interiorNode)){
+                        System.out.println(p.getClass());
+                        p.transformGraph(graph, interiorNode);
+                        break;
+                    }
+                }catch (Exception e){
+                    break;
+                }
 
-//        TerrainMap map = new TerrainMap();
-//        map.fillMapWithExampleData();
-//
-//        ModelGraph graph = new ModelGraph("testGraph");
-//        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 2.0));
-//        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(5.0, 0.0, 2.0));
-//        Vertex v3 = graph.insertVertex("v3", VertexType.HANGING_NODE, new Point3d(0.0, 3.0, 2.0));
-//        graph.insertEdge("e1", v1, v2, true);
-//        graph.insertEdge("e2", v2, v3, true);
-//        graph.insertEdge("e3", v3, v1, true);
-//        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
-//
-//        System.out.println(map.getAllPointsInTriangleArea(in1).size());
-//        System.out.println(MapProcessingUtil.calculateTerrainApproximationError(in1, map));
+            }
+        });
+
     }
 }
