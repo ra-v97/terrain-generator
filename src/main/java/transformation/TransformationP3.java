@@ -1,112 +1,149 @@
 package transformation;
 
 import model.*;
+import org.javatuples.Pair;
+import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class TransformationP3 implements Transformation {
+
     @Override
     public boolean isConditionCompleted(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
 
-        return areAllVertexType(triangle) &&
-                isTransformationConditionFulfilled(graph, triangle);
+        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        int hang = interiorNode.getAssociatedNodes().size();
+
+        if (!interiorNode.isPartitionRequired()) {
+
+            return false;
+        }
+        if (getSimpleVertexCount(triangle) != 3 || hang != 1) {
+            return false;
+        }
+
+        Vertex hangingNode = interiorNode.getAssociatedNodes().get(0);
+
+        Pair<Triplet<Vertex, Vertex, Vertex>,
+                Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge>> orientedFigure = orientFigure(graph, hangingNode, triangle);
+
+        GraphEdge v1h = orientedFigure.getValue1().getValue0();
+        GraphEdge v2h = orientedFigure.getValue1().getValue1();
+        GraphEdge v2v3 = orientedFigure.getValue1().getValue2();
+        GraphEdge v1v3 = orientedFigure.getValue1().getValue3();
+
+        return (v1h.getL() + v2h.getL() < v1v3.getL()) && (v1v3.getL() >= v2v3.getL());
+    }
+
+    private Optional<Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge>> verifyRotation(ModelGraph graph,
+                                                                                         Vertex hangingNode,
+                                                                                         Triplet<Vertex, Vertex, Vertex> triangle) {
+
+        GraphEdge v1h, v2h, v2v3, v1v3;
+
+        if (graph.getEdgeBetweenNodes(triangle.getValue0(), hangingNode).isPresent() &&
+                graph.getEdgeBetweenNodes(triangle.getValue1(), hangingNode).isPresent()) {
+
+            v1h = graph.getEdgeBetweenNodes(triangle.getValue0(), hangingNode)
+                    .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+            v2h = graph.getEdgeBetweenNodes(triangle.getValue1(), hangingNode)
+                    .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+            v1v3 = graph.getEdgeBetweenNodes(triangle.getValue0(), triangle.getValue2())
+                    .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+            v2v3 = graph.getEdgeBetweenNodes(triangle.getValue1(), triangle.getValue2())
+                    .orElseThrow(() -> new RuntimeException("Unknown edge id"));
+
+            return Optional.of(new Quartet<>(v1h, v2h, v2v3, v1v3));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Pair<Triplet<Vertex, Vertex, Vertex>,
+            Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge>> orientFigure(ModelGraph graph,
+                                                                              Vertex hangingNode,
+                                                                              Triplet<Vertex, Vertex, Vertex> triangle) {
+
+        Optional<Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge>> rotatedEgdes = verifyRotation(graph, hangingNode, triangle);
+        Triplet<Vertex, Vertex, Vertex> rotatedTri = triangle;
+
+        if (!rotatedEgdes.isPresent()) {
+            rotatedTri = new Triplet<>(triangle.getValue1(), triangle.getValue2(), triangle.getValue0());
+            rotatedEgdes = verifyRotation(graph, hangingNode, rotatedTri);
+
+            if (!rotatedEgdes.isPresent()) {
+                rotatedTri = new Triplet<>(triangle.getValue2(), triangle.getValue0(), triangle.getValue1());
+                rotatedEgdes = verifyRotation(graph, hangingNode, rotatedTri);
+            }
+        }
+
+        if (rotatedEgdes.isPresent()) {
+            Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge> edges = rotatedEgdes.get();
+
+            if (edges.getValue2().getL() > edges.getValue3().getL()) {
+                return new Pair<>(new Triplet<>(rotatedTri.getValue1(), rotatedTri.getValue0(), rotatedTri.getValue2()),
+                        new Quartet<>(edges.getValue1(), edges.getValue0(), edges.getValue3(), edges.getValue2()));
+            } else {
+                return new Pair<>(rotatedTri, rotatedEgdes.get());
+            }
+
+        } else {
+            throw new RuntimeException("Transformation error");
+        }
     }
 
     @Override
     public ModelGraph transformGraph(ModelGraph graph, InteriorNode interiorNode) {
-        Triplet<Vertex, Vertex, Vertex> triangle = getOrderedTriangle(interiorNode.getTriangleVertexes(), graph);
+        Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
+        Vertex hangingNode = interiorNode.getAssociatedNodes().get(0);
 
-        Vertex first = triangle.getValue0();
-        Vertex second = triangle.getValue1();
-        Vertex third = triangle.getValue2();
-        Vertex hanging = getHangingVertexBetween(first, second, graph);
-        
-        GraphEdge firstToHanging = graph.getEdgeById(first.getEdgeBetween(hanging).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
-        GraphEdge hangingToSecond = graph.getEdgeById(hanging.getEdgeBetween(second).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
+        Pair<Triplet<Vertex, Vertex, Vertex>,
+                Quartet<GraphEdge, GraphEdge, GraphEdge, GraphEdge>> rotatedFigure = orientFigure(graph, hangingNode, triangle);
 
-        //remove old
+        Vertex v1 = rotatedFigure.getValue0().getValue0();
+        Vertex v2 = rotatedFigure.getValue0().getValue1();
+        Vertex v3 = rotatedFigure.getValue0().getValue2();
+
+        GraphEdge v1v3 = rotatedFigure.getValue1().getValue3();
+
+        //transformation process
         graph.removeInterior(interiorNode.getId());
-        graph.deleteEdge(first, hanging);
-        graph.deleteEdge(hanging, second);
+        graph.deleteEdge(v1, v3);
 
-        //create new vertex
-        Vertex inserted = hanging.setVertexType(VertexType.SIMPLE_NODE);
+        Vertex insertedVertex = graph.insertVertex(interiorNode.getId(),
+                VertexType.SIMPLE_NODE,
+                Point3d.middlePoint(v1.getCoordinates(), v3.getCoordinates()));
 
-        //connect it to other
-        String edgeFromOneToVertexId = first.getId().concat(inserted.getId());
-        GraphEdge fromOneToVertex = graph.insertEdge(edgeFromOneToVertexId, first, inserted);
-        fromOneToVertex.setB(firstToHanging.getB());
+        String newEdge1Id = v1.getId().concat(insertedVertex.getId());
+        String newEdge2Id = v3.getId().concat(insertedVertex.getId());
+        String newEdge3Id = v2.getId().concat(insertedVertex.getId());
 
-        String edgeFromVertexToTwoId = inserted.getId().concat(second.getId());
-        GraphEdge fromVertexToTwo = graph.insertEdge(edgeFromVertexToTwoId, inserted, second);
-        fromVertexToTwo.setB(hangingToSecond.getB());
+        GraphEdge insertedEdge1 = graph.insertEdge(newEdge1Id, v1, insertedVertex);
+        insertedEdge1.setB(v1v3.getB());
 
-        String edgeFromVertexToThird = inserted.getId().concat(third.getId());
-        GraphEdge fromVertexToThird = graph.insertEdge(edgeFromVertexToThird, inserted, third);
-        fromVertexToThird.setB(false);
+        GraphEdge insertedEdge2 = graph.insertEdge(newEdge2Id, v3, insertedVertex);
+        insertedEdge2.setB(v1v3.getB());
 
-        //Rebuild interior
-        String leftInteriorId = first.getId().concat(inserted.getId()).concat(third.getId());
-        InteriorNode left = graph.insertInterior(leftInteriorId, first, inserted, third);
-        left.setPartitionRequired(false);
+        GraphEdge insertedEdge3 = graph.insertEdge(newEdge3Id, v2, insertedVertex);
+        insertedEdge3.setB(false);
 
-        String rightInteriorId = inserted.getId().concat(second.getId()).concat(third.getId());
-        InteriorNode right = graph.insertInterior(rightInteriorId, inserted, second, third);
-        right.setPartitionRequired(false);
+        String insertedInterior1Id = v1.getId().concat(v2.getId()).concat(insertedVertex.getId());
+        String insertedInterior2Id = v2.getId().concat(v3.getId()).concat(insertedVertex.getId());
+        graph.insertInterior(insertedInterior1Id, v1, v2, insertedVertex);
+        graph.insertInterior(insertedInterior2Id, v2, v3, insertedVertex);
+
         return graph;
     }
 
-    private Optional<Vertex> getHangingVertexBetweenOp(Vertex v1, Vertex v2, ModelGraph graph){
-        List<Vertex> available = graph.getVertexesBetween(v1, v2);
-
-        return available
-                .stream()
-                .filter(vertex -> vertex.getVertexType() == VertexType.HANGING_NODE)
-                .findAny();
-    }
-
-    private Vertex getHangingVertexBetween(Vertex v1, Vertex v2, ModelGraph graph){
-        return getHangingVertexBetweenOp(v1, v2, graph)
-                .orElseThrow(() -> new RuntimeException("Hanging vertex between " + v1.getId() +" and " + v2.getId() + " not found"));
-    }
-
-    private boolean isTransformationConditionFulfilled(ModelGraph graph, Triplet<Vertex, Vertex, Vertex> triangle){
-        Vertex first = triangle.getValue0();
-        Vertex second = triangle.getValue1();
-        Vertex third = triangle.getValue2();
-        Vertex hanging = getHangingVertexBetween(first, second, graph);
-
-        GraphEdge L1 = graph.getEdgeById(first.getEdgeBetween(hanging).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
-        GraphEdge L2 = graph.getEdgeById(hanging.getEdgeBetween(second).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
-        GraphEdge L3 = graph.getEdgeById(second.getEdgeBetween(third).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
-        GraphEdge L4 = graph.getEdgeById(third.getEdgeBetween(first).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
-
-        return (L1.getL() + L2.getL()) >= L3.getL() && (L1.getL() + L2.getL()) >= L4.getL();
-    }
-
-    private Triplet<Vertex, Vertex, Vertex> getOrderedTriangle(Triplet<Vertex, Vertex, Vertex> v, ModelGraph graph){
-        if(getHangingVertexBetweenOp(v.getValue0(), v.getValue1(), graph).isPresent()){
-            return v;
-        } else if (getHangingVertexBetweenOp(v.getValue0(), v.getValue2(), graph).isPresent()){
-            return new Triplet<>(v.getValue2(), v.getValue0(), v.getValue1());
-        } else if(getHangingVertexBetweenOp(v.getValue1(), v.getValue2(), graph).isPresent()) {
-            return new Triplet<>(v.getValue1(), v.getValue2(), v.getValue0());
+    private static int getSimpleVertexCount(Triplet<Vertex, Vertex, Vertex> triangle) {
+        int count = 0;
+        for (Object o : triangle) {
+            Vertex v = (Vertex) o;
+            if (v.getVertexType() == VertexType.SIMPLE_NODE) {
+                count++;
+            }
         }
-        throw new RuntimeException("Configuration with hanging vertex between 2 vertexes was not found");
-    }
-
-    private boolean areAllVertexType(Triplet<Vertex, Vertex, Vertex> triangle) {
-        return triangle.toList().stream().map(e -> {
-            Vertex v = (Vertex)e;
-            return isVertexType(v);
-        }).reduce(true, (acc, e) -> acc && e);
-    }
-
-    private boolean isVertexType(Vertex v){
-        return v.getVertexType() == VertexType.SIMPLE_NODE;
+        return count;
     }
 }
