@@ -15,9 +15,6 @@ public class TransformationP4 implements Transformation {
         Triplet<Vertex, Vertex, Vertex> triangle = interiorNode.getTriangleVertexes();
         int hang = interiorNode.getAssociatedNodes().size();
 
-        if (!interiorNode.isPartitionRequired()) {
-            return false;
-        }
         if (getSimpleVertexCount(triangle) != 3 || hang != 1) {
             return false;
         }

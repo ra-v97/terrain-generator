@@ -42,14 +42,14 @@ if(dim*dim*2 != siz || siz == 0)
     throw("Bad files")
 end
 
-mapArr = Array{UInt16,2}(undef, ceil(Int32, (boundaries.N - boundaries.S + 1)*dim),
+mapArr = Array{Int16,2}(undef, ceil(Int32, (boundaries.N - boundaries.S + 1)*dim),
     ceil(Int32, (boundaries.E - boundaries.W + 1)*dim))
 
 filled=[]
 for (file, coords) in coordsWithFiles
     fn = string(dataDir, file, ".hgt")
     io = open(fn, "r")
-    data = reshape(reinterpret(UInt16, read(io, dim*dim*2)), (dim, dim))
+    data = reshape(reinterpret(Int16, read(io, dim*dim*2)), (dim, dim))
     data = rotl90(data)
     data .= ntoh.(data)
     close(io)
@@ -62,7 +62,7 @@ end
 mapArr
 mapArr = reverse(mapArr, dims=1)
 resizedMap = imresize(mapArr, resolution, resolution)
-resizedMap = floor.(UInt16, resizedMap)
+resizedMap = floor.(Int16, resizedMap)
 
 function printArr(array)
     max = 0xffff

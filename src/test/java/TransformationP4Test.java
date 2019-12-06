@@ -174,6 +174,7 @@ public class TransformationP4Test extends AbstractTransformationTest {
         GraphEdge e4 = new GraphEdge("e4", "E", new Pair<>(v3, v1), true);
 
         InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3, h);
+        graph.insertVertex(h);
 
         return populateTestGraphWithLists(graph, new Vertex[]{v1, v2, v3}, new GraphEdge[]{e1, e2, e3, e4}, in1, needsPartitioning);
     }

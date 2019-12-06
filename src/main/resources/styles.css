@@ -1,0 +1,17 @@
+node {
+    fill-color: grey;
+    size: 20px;
+    stroke-mode: plain;
+    stroke-color: black;
+    stroke-width: 1px;
+    text-alignment: center;
+}
+
+node.H {
+    fill-color: green;
+}
+
+node.important {
+    fill-color: red;
+    size: 15px;
+}

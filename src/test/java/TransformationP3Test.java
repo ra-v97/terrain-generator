@@ -110,5 +110,4 @@ public class TransformationP3Test extends AbstractTransformationTest {
         graph.display();
         TimeUnit.SECONDS.sleep(5);
     }
-
 }
