@@ -7,6 +7,7 @@ import org.javatuples.Pair;
 import processor.MapProcessingUtil;
 import transformation.Transformation;
 import transformation.TransformationP1;
+import transformation.TransformationP3;
 import transformation.TransformationP7;
 
 public class MainApp {
@@ -120,11 +121,11 @@ public class MainApp {
     public static void main(String[] args) {
         BasicConfigurator.configure();
 
-        Pair<ModelGraph, InteriorNode> task = task1();
+        Pair<ModelGraph, InteriorNode> task = task5();
         ModelGraph graph = task.getValue0();
         InteriorNode interiorNode = task.getValue1();
 
-        Transformation t1 = new TransformationP1();
+        Transformation t1 = new TransformationP3();
         log.info(String.format("Condition state for transformation P1: %b", t1.isConditionCompleted(graph, interiorNode)));
 
         graph.display();

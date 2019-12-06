@@ -1,201 +1,174 @@
 import model.*;
-import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import transformation.Transformation;
 import transformation.TransformationP2;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TransformationP2Test extends AbstractTransformationTest {
     private Transformation transformation = new TransformationP2();
 
+    @ParameterizedTest
+    @MethodSource("graphs")
+    public void transformationProducesTwoInteriorNodes(Triplet<ModelGraph, InteriorNode, Vertex> graph) {
+        // Arrange
+        assertEquals(1, graph.getValue0().getInteriors().size());
+        // Act
+        ModelGraph result = transformation.transformGraph(graph.getValue0(), graph.getValue1());
+        // Assert
+        assertEquals(2, result.getInteriors().size());
+    }
+
+    @ParameterizedTest
+    @MethodSource("graphs")
+    public void hangingBecomesSimpleNode(Triplet<ModelGraph, InteriorNode, Vertex> graph) {
+        // Arrange
+        assertEquals(1, graph.getValue0().getInteriors().size());
+        // Act
+        transformation.transformGraph(graph.getValue0(), graph.getValue1());
+        // Assert
+        assertEquals(VertexType.SIMPLE_NODE, graph.getValue2().getVertexType());
+    }
+
+    @ParameterizedTest
+    @MethodSource("graphs")
+    public void hasNoHangingNode(Triplet<ModelGraph, InteriorNode, Vertex> graph) {
+        // Arrange
+        assertEquals(1, graph.getValue0().getInteriors().size());
+        // Act
+        ModelGraph result = transformation.transformGraph(graph.getValue0(), graph.getValue1());
+        // Assert
+        assertEquals(0, result.getVertices().stream()
+                .filter(e -> e.getVertexType().equals(VertexType.HANGING_NODE))
+                .count());
+    }
+
+    private static Stream<Triplet<ModelGraph, InteriorNode, Vertex>> graphs()
+    {
+        return Stream.of(
+                createGraph(),
+                createGraph1(),
+                createGraph2()
+        );
+    }
     @Test
-    public void conditionPassWithCorrectTriangle(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    public void p2TransformationTest(){
+        ModelGraph graph = createP2Graph();
+        List<Integer> interiorsToTransform = Arrays.asList(3, 6);
+        for(Integer interior: interiorsToTransform) {
+            transformation.transformGraph(graph, graph.getInterior("i" + interior).get());
+        }
+        assertTrue(graph.getEdgeBetweenNodes(graph.getVertex("v7").get(),graph.getVertex("v2").get()).isPresent());
+        assertTrue(graph.getEdgeBetweenNodes(graph.getVertex("v6").get(),graph.getVertex("v4").get()).isPresent());
+
     }
 
     @Test
-    public void conditionWithRotatedTriangle(){
-        ModelGraph graph = createRotatedTriangleGraph(true);
-        assertTrue(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
+    public void p2TransformationTestInteriorsCount(){
+        ModelGraph graph = createP2Graph();
+        List<Integer> interiorsToTransform = Arrays.asList(3, 6);
+        for(Integer interior: interiorsToTransform)
+            transformation.transformGraph(graph, graph.getInterior("i" + interior).get());
+        assertEquals(8, graph.getInteriors().size());
+
     }
 
-    @Test
-    public void conditionFailsWhenPartitioningIsNotNeeded(){
-        ModelGraph graph = createCorrectTriangleGraph(false);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithIsoscelesTriangle(){
-        ModelGraph graph = createIsoscelesTriangle(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithGraphWithHangingNode(){
-        ModelGraph graph = createTriangleGraphWithHangingNode(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void conditionFailsWithImproperBorderEdges(){
-        ModelGraph graph = createTriangleGraphWithIncorrectBorder(true);
-        assertFalse(transformation.isConditionCompleted(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)));
-    }
-
-    @Test
-    public void transformationProducesTwoInteriorNodes(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        assertEquals(2, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getInteriors().size());
-    }
-
-    @Test
-    public void transformationProducesOneNewVertex(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        assertEquals(4, transformation.transformGraph(graph, graph.getInterior("i1").orElseThrow(AssertionError::new)).getVertices().size());
-    }
-
-    @Test
-    public void transformationProducesOneNewHangingVertex(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        assertEquals(VertexType.HANGING_NODE, graph.getVertex(interior.getId()).orElseThrow(AssertionError::new).getVertexType());
-    }
-
-    @Test
-    public void transformationProducesTheNewVertexOnTheEdge(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
-        Vertex v2 = graph.getVertex("v2").orElseThrow(AssertionError::new);
-        assertEquals(Point3d.middlePoint(v1.getCoordinates(), v2.getCoordinates()), newVertex.getCoordinates());
-    }
-
-    @Test
-    public void transformationProducesNewInteriorNodesWithCorrectParams(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-
-        transformation.transformGraph(graph, interior);
-        InteriorNode interior1 = (InteriorNode) graph.getInteriors().toArray()[0];
-        InteriorNode interior2 = (InteriorNode) graph.getInteriors().toArray()[1];
-
-        assertTrue(!interior1.isPartitionRequired() && !interior2.isPartitionRequired());
-    }
-
-    @Test
-    public void transformationProducesNewEdges(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        ModelGraph transformed = transformation.transformGraph(graph, interior);
-        assertEquals(11, transformed.getEdges().size());
-    }
-
-    @Test
-    public void transformationProducesNewOppositeEdgesWithCorrectLength(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        Vertex v1 = graph.getVertex("v1").orElseThrow(AssertionError::new);
-        Vertex v2 = graph.getVertex("v2").orElseThrow(AssertionError::new);
-        GraphEdge oldOpposite = graph.getEdge(v1, v2).orElseThrow(AssertionError::new);
-
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        GraphEdge opposite1 = graph.getEdge(v1, newVertex).orElseThrow(AssertionError::new);
-        GraphEdge opposite2 = graph.getEdge(newVertex, v2).orElseThrow(AssertionError::new);
-
-        assertEquals(oldOpposite.getL(), opposite1.getL() + opposite2.getL());
-    }
-
-    @Test
-    public void transformationProducesNewInternalEdgeWithCorrectParams(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex h = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
-
-        assertFalse(internalEdge.getB());
-    }
-
-    @Test
-    public void transformationProducesNewInternalEdgeWithCorrectLength(){
-        ModelGraph graph = createCorrectTriangleGraph(true);
-        InteriorNode interior = graph.getInterior("i1").orElseThrow(AssertionError::new);
-        transformation.transformGraph(graph, interior);
-        Vertex newVertex = graph.getVertex(interior.getId()).orElseThrow(AssertionError::new);
-        Vertex h = graph.getVertex("v3").orElseThrow(AssertionError::new);
-        GraphEdge internalEdge = graph.getEdge(h, newVertex).orElseThrow(AssertionError::new);
-
-        assertEquals(Point3d.distance(newVertex.getCoordinates(), h.getCoordinates()), internalEdge.getL());
-    }
-
-
-    private ModelGraph createCorrectTriangleGraph(boolean needsPartitioning) {
+    public ModelGraph createP2Graph() {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(6.0, 6.0, 0.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
 
-        return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
+        Vertex v0 = graph.insertVertex("v0", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(100.0, 0.0, 0.0));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(200.0, 0.0, 0.0));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(0.0, 100.0, 0.0));
+        Vertex v4 = graph.insertVertex("v4", VertexType.SIMPLE_NODE, new Point3d(100.0, 100.0, 0.0));
+        Vertex v5 = graph.insertVertex("v5", VertexType.SIMPLE_NODE, new Point3d(200.0, 100.0, 0.0));
+        Vertex v6 = graph.insertVertex("v6", VertexType.HANGING_NODE, new Point3d(50.0, 50.0, 0.0));
+        Vertex v7 = graph.insertVertex("v7", VertexType.HANGING_NODE, new Point3d(150.0, 50.0, 0.0));
+
+        graph.insertEdge("e0", v0, v3, true);
+        graph.insertEdge("e1", v0, v1, true);
+        graph.insertEdge("e2", v0, v6, false);
+        graph.insertEdge("e3", v3, v6, false);
+        graph.insertEdge("e4", v6, v1, false);
+        graph.insertEdge("e5", v3, v4, true);
+        graph.insertEdge("e6", v4, v1, false);
+        graph.insertEdge("e7", v4, v7, false);
+        graph.insertEdge("e8", v1, v7, false);
+        graph.insertEdge("e9", v7, v5, false);
+        graph.insertEdge("e10", v4, v5, true);
+        graph.insertEdge("e11", v1, v2, true);
+        graph.insertEdge("e12", v2, v5, true);
+
+        graph.insertInterior("i1", v6, v1, v0);
+        graph.insertInterior("i2", v0, v6, v3);
+        graph.insertInterior("i3", v3, v1, v4); //transform
+        graph.insertInterior("i4", v1, v4, v7);
+        graph.insertInterior("i5", v4, v5, v7);
+        graph.insertInterior("i6", v1, v2, v5); //transform
+
+        graph.display();
+        try {
+            TimeUnit.SECONDS.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return graph;
     }
 
-    private ModelGraph createRotatedTriangleGraph(boolean needsPartitioning) {
+    private static Triplet<ModelGraph, InteriorNode, Vertex> createGraph() {
         ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(6.0, 20.0, 0.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v2, v3), false);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v3, v1), false);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v1, v2), false);
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(2.0, 0.0, 0.0));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 1.0, 0.0));
+        Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(1.5, 0.5, 0.0));
 
-        return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
+        GraphEdge v2_h4 = graph.insertEdge("e1", v2, h4, true);
+        GraphEdge v1_v3 = graph.insertEdge("e2", v1, v3, true);
+        GraphEdge h4_v3 = graph.insertEdge("e3", h4, v3, true);
+        GraphEdge v2_v3 = graph.insertEdge("e4", v2, v3, true);
+
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        return new Triplet<>(graph, in1, h4);
     }
 
-    private ModelGraph createTriangleGraphWithHangingNode(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.HANGING_NODE, new Point3d(0.0, 0.0, 12.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, -50.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 6.0, 0.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), false);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v1, v1), false);
+    private static Triplet<ModelGraph, InteriorNode, Vertex> createGraph1() {
+        ModelGraph graph = new ModelGraph("testGraph");
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(5.0, 0.0, 0.0));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(0.0, 5.0, 0.0));
+        Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(2.5, 2.5, 0.0));
 
-        return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
+        GraphEdge v2_h4 = graph.insertEdge("e1", v2, h4, true);
+        GraphEdge v1_v3 = graph.insertEdge("e2", v1, v3, true);
+        GraphEdge h4_v3 = graph.insertEdge("e3", h4, v3, true);
+        GraphEdge v1_v2 = graph.insertEdge("e5", v1, v2, true);
+
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        return new Triplet<>(graph, in1, h4);
     }
 
-    private ModelGraph createTriangleGraphWithIncorrectBorder(boolean needsPartitioning) {
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, -1.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(1.0, 6.0, 1.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), true);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
+    private static Triplet<ModelGraph, InteriorNode, Vertex> createGraph2(){
+        ModelGraph graph = new ModelGraph("testGraph");
+        Vertex v1 = graph.insertVertex("v1", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
+        Vertex v2 = graph.insertVertex("v2", VertexType.SIMPLE_NODE, new Point3d(5.0, 0.0, 0.0));
+        Vertex v3 = graph.insertVertex("v3", VertexType.SIMPLE_NODE, new Point3d(5.0, 5.0, 0.0));
+        Vertex h4 = graph.insertVertex("h4", VertexType.HANGING_NODE, new Point3d(2.5, 2.5, 0.0));
 
-        return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
-    }
+        GraphEdge v1_v2 = graph.insertEdge("e1", v1, v2, true);
+        GraphEdge v2_v3 = graph.insertEdge("e2", v2, v3, true);
+        GraphEdge v1_h4 = graph.insertEdge("e3", v1, h4, true);
+        GraphEdge h4_v3 = graph.insertEdge("e4", h4, v3, true);
 
-    private ModelGraph createIsoscelesTriangle(boolean needsPartitioning) {     //L1==L3
-        ModelGraph graph = createEmptyGraph();
-        Vertex v1 = new Vertex(graph, "v1", VertexType.SIMPLE_NODE, new Point3d(6.0, 8.0, 0.0));
-        Vertex v2 = new Vertex(graph, "v2", VertexType.SIMPLE_NODE, new Point3d(0.0, 10.0, 0.0));
-        Vertex v3 = new Vertex(graph, "v3", VertexType.SIMPLE_NODE, new Point3d(0.0, 0.0, 0.0));
-        GraphEdge e1 = new GraphEdge("e1", "E", new Pair<>(v1, v2), false);
-        GraphEdge e2 = new GraphEdge("e2", "E", new Pair<>(v2, v3), true);
-        GraphEdge e3 = new GraphEdge("e3", "E", new Pair<>(v3, v1), true);
-
-        return populateTestGraph(graph, v1, v2, v3, e1, e2, e3, needsPartitioning);
+        InteriorNode in1 = graph.insertInterior("i1", v1, v2, v3);
+        return new Triplet<>(graph, in1, h4);
     }
 }
