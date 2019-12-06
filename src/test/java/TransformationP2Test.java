@@ -2,14 +2,14 @@ import model.*;
 import org.javatuples.Pair;
 import org.junit.Test;
 import transformation.Transformation;
-import transformation.TransformationP2old;
+import transformation.TransformationP2;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TransformationP2Test extends AbstractTransformationTest {
-    private Transformation transformation = new TransformationP2old();
+    private Transformation transformation = new TransformationP2();
 
     @Test
     public void conditionPassWithCorrectTriangle(){
