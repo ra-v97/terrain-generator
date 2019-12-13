@@ -25,6 +25,9 @@ public class TransformationP2 implements Transformation {
         Vertex third = triangle.getValue2();
         Vertex hanging = getHangingVertexBetween(first, second, graph); //hanging vertex
 
+        // updated transformation -> convert hanging node to simple one
+        hanging.setVertexType(VertexType.SIMPLE_NODE);
+
         GraphEdge firstToHanging = graph.getEdgeById(first.getEdgeBetween(hanging).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
         GraphEdge hangingToSecond = graph.getEdgeById(hanging.getEdgeBetween(second).getId()).orElseThrow(()->new RuntimeException("Unknown edge id"));
 

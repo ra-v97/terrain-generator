@@ -78,7 +78,14 @@ public class TransformationP2Test extends AbstractTransformationTest {
         for(Integer interior: interiorsToTransform)
             transformation.transformGraph(graph, graph.getInterior("i" + interior).get());
         assertEquals(8, graph.getInteriors().size());
+    }
 
+    @Test
+    public void p2TransformationTestHangingNodeIsConvertedToSimpleOne(){
+        ModelGraph graph = createP2Graph();
+        transformation.transformGraph(graph, graph.getInterior("i3").get());
+        Vertex oldHangingNode = graph.getVertex("v6").get();
+        assertEquals(oldHangingNode.getVertexType(), VertexType.SIMPLE_NODE);
     }
 
     public ModelGraph createP2Graph() {
